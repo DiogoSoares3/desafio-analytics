@@ -24,7 +24,7 @@ Single entrypoint is the **`justfile`** — prefer `just <recipe>` over raw comm
 | **uv** | Python env + dependency manager (installs dbt, dev tools) | `uv sync`, `uv run …` |
 | **just** | Task runner / single entrypoint | `just`, `just build`, `just lint` |
 | **ruff** | Python lint + format | `just lint` / `just fmt` (`.py` only) |
-| **pyright** | Python type check (mode: `basic`) | `just typecheck` |
+| **pyright** | Python type check (mode: `standard`) | `just typecheck` |
 | **sqlfluff** | SQL lint + format for dbt models (dbt templater, DuckDB dialect) | `just lint` / `just fmt` |
 | **commitizen** | Conventional-commit authoring + validation | `just commit`, commit-msg hook |
 | **prek** | Git hook runner (reads `.pre-commit-config.yaml`) | `prek install`, runs on commit |
@@ -73,7 +73,7 @@ Layering follows the medallion mapping in [ADR-0009](docs/adrs/0009-medallion-vi
 ## Python conventions
 - Python is minimal (EDA, helper scripts). Keep it that way — modeling belongs in dbt/SQL, not pandas.
 - **ruff** governs lint + format (line length 100, default rule set). Run `just fmt` before committing.
-- **pyright** in `basic` mode; add type hints to any non-notebook module. Notebooks are exempt from
+- **pyright** in `standard` mode; add type hints to any non-notebook module. Notebooks are exempt from
   pyright but not from ruff where practical.
 
 ## Commit conventions
