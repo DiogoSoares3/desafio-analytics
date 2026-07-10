@@ -65,6 +65,92 @@ flowchart LR
   %% dashed = seam: dbt sources, schema/PK tests on dims+bridge+fact, singular reconciliation tests
 ```
 
+### Star schema (dimensional model)
+The Gold layer the build implements: `fct_sales` at order-line grain surrounded by seven conformed
+dimensions, with the multi-valued sales reason reached through a bridge (ADR-0003) rather than a fact FK.
+Surrogate `_key`s per [ADR-0007](adrs/0007-surrogate-keys.md); geography = ship-to
+([ADR-0005](adrs/0005-geography-conformance-ship-to.md)). This diagram is the implementation contract for
+Phases 2–3.
+
+```mermaid
+erDiagram
+  DIM_PRODUCT      ||--o{ FCT_SALES : product_key
+  DIM_CUSTOMER     ||--o{ FCT_SALES : customer_key
+  DIM_DATE         ||--o{ FCT_SALES : date_key
+  DIM_GEOGRAPHY    ||--o{ FCT_SALES : "geography_key (ship-to)"
+  DIM_CREDIT_CARD  ||--o{ FCT_SALES : credit_card_key
+  DIM_ORDER_STATUS ||--o{ FCT_SALES : order_status_key
+  FCT_SALES              }o--o{ BRIDGE_ORDER_SALES_REASON : sales_order_number
+  BRIDGE_ORDER_SALES_REASON }o--|| DIM_SALES_REASON : sales_reason_key
+
+  FCT_SALES {
+    string  sales_fact_key      PK "hash of salesorderdetailid"
+    string  product_key         FK
+    string  customer_key        FK
+    string  date_key            FK
+    string  geography_key       FK "ship-to"
+    string  credit_card_key     FK
+    string  order_status_key    FK
+    string  sales_order_number      "degenerate dim"
+    int     sales_order_line_number "degenerate dim"
+    int     order_qty               "units"
+    numeric gross_revenue           "UnitPrice x OrderQty (ADR-0001)"
+    numeric discount_amount         "UnitPriceDiscount x UnitPrice x OrderQty"
+    numeric net_revenue             "gross - discount (= LineTotal)"
+  }
+  DIM_PRODUCT {
+    string product_key      PK
+    int    product_id           "natural key"
+    string product_name
+    string product_number
+    string subcategory_name
+    string category_name
+  }
+  DIM_CUSTOMER {
+    string customer_key     PK
+    int    customer_id          "natural key"
+    string full_name
+  }
+  DIM_DATE {
+    string date_key         PK
+    date   date_day
+    int    year
+    int    month_number
+    string month_name
+    string year_month
+    string day_of_week
+    boolean is_weekend
+  }
+  DIM_GEOGRAPHY {
+    string geography_key    PK
+    string city
+    string state_province
+    string country
+  }
+  DIM_CREDIT_CARD {
+    string credit_card_key  PK
+    string card_type
+  }
+  DIM_SALES_REASON {
+    string sales_reason_key PK
+    string sales_reason_name
+    string sales_reason_type
+  }
+  DIM_ORDER_STATUS {
+    string order_status_key PK
+    int    status_code
+    string status_label
+  }
+  BRIDGE_ORDER_SALES_REASON {
+    string sales_order_number FK
+    string sales_reason_key   FK
+  }
+```
+
+> Reason analysis joins `fct_sales → sales_order_number → bridge → dim_sales_reason`; the base fact carries
+> **no** reason FK, so gross revenue never fans out (ADR-0003). A single-reason filter (e.g. "Promotion")
+> is exact.
+
 ## Seams
 Where behaviour is intercepted for testing — prefer existing, highest, fewest. Three seam groups, all
 native dbt mechanisms; the green signal is `dbt build`.

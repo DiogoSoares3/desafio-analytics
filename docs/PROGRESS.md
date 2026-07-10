@@ -6,11 +6,10 @@
 > `PRD.md` / `ARCHITECTURE.md` as needed.
 
 ## Current status
-**Phase 1 (Foundation) COMPLETE — clean phase boundary.** All 3 issues done: P1-01 scaffold (PR #1),
-P1-02 seeds+sources (PR #2), P1-03 source tests (PR #3). Phase DoD met: `dbt debug` OK, `dbt build`
-green, 14 seeds load, `dbt test --select source:*` → 36 pass, packages installed, README + conventions
-in place. Awaiting go-ahead to PLAN **Phase 2 (Dimensions)** (backlog-review = confirm).
-ADRs 0001–0009 accepted; profile: subagent-per-phase.
+**BUILD — Phase 2 (Dimensions).** Phase 1 complete (PRs #1–#3). Phase 2 planned + backlog approved
+(7 dim slices P2-01..P2-07, all blocked only by Phase 1). ARCHITECTURE.md enriched with the star-schema
+ER diagram (implementation contract). Dispatching **one worker subagent for the whole phase** (worktree,
+branch-per-issue → PR). pyright raised to `standard`. ADRs 0001–0009; profile: subagent-per-phase.
 
 ## In review (PR open, awaiting merge) — human-review policy only
 _Issues that are green with a PR open but not yet merged (`in-review`) — one line each with the PR URL.
