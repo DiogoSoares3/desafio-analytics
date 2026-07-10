@@ -6,10 +6,11 @@
 > `PRD.md` / `ARCHITECTURE.md` as needed.
 
 ## Current status
-**BUILD — Phase 1 (Foundation).** **P1-01 done** (scaffold, PR #1). Project conventions added
-(CLAUDE.md + uv/ruff/pyright/sqlfluff/commitizen/prek + justfile). Repo restructured: dbt in
-`transform/`, siblings `notebooks/ bi/ data/` (DuckDB in `data/`, git-ignored). Next: **P1-02**
-(seeds + sources). ADRs 0001–0009 accepted; profile: subagent-per-phase.
+**Phase 1 (Foundation) COMPLETE — clean phase boundary.** All 3 issues done: P1-01 scaffold (PR #1),
+P1-02 seeds+sources (PR #2), P1-03 source tests (PR #3). Phase DoD met: `dbt debug` OK, `dbt build`
+green, 14 seeds load, `dbt test --select source:*` → 36 pass, packages installed, README + conventions
+in place. Awaiting go-ahead to PLAN **Phase 2 (Dimensions)** (backlog-review = confirm).
+ADRs 0001–0009 accepted; profile: subagent-per-phase.
 
 ## In review (PR open, awaiting merge) — human-review policy only
 _Issues that are green with a PR open but not yet merged (`in-review`) — one line each with the PR URL.
