@@ -64,6 +64,9 @@ sources:
           - name: name
             description: Reason name.
             data_tests: [not_null]
+          - name: reasontype
+            description: Reason category (e.g. Marketing, Other).
+            data_tests: [not_null]
 
       - name: customer
         description: Customers; online customers link to a person (storeid null).
