@@ -110,3 +110,25 @@ models:
         description: True if the date falls on Saturday or Sunday.
         data_tests:
           - not_null
+
+  - name: dim_credit_card
+    description: >
+      Conformed credit card dimension (Gold), one row per credit card, with its card type.
+      SCD Type 1 (ADR-0008).
+    columns:
+      - name: credit_card_key
+        description: Hashed surrogate primary key (dbt_utils.generate_surrogate_key over credit_card_id; ADR-0007).
+        data_tests:
+          - unique
+          - not_null
+      - name: credit_card_id
+        description: Natural key from the source credit card table.
+        data_tests:
+          - not_null
+      - name: card_type
+        description: Card type (e.g. Vista, SuperiorCard).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Vista", "SuperiorCard", "Distinguish", "ColonialVoyage"]

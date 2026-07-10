@@ -127,6 +127,9 @@ sources:
           - name: creditcardid
             description: Credit card natural key.
             data_tests: [unique, not_null]
+          - name: cardtype
+            description: Card type (e.g. Vista, SuperiorCard).
+            data_tests: [not_null]
 
       - name: specialoffer
         description: Special offers / discounts applied to order lines.
