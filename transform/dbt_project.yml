@@ -26,3 +26,9 @@ models:
       +materialized: ephemeral
     marts:
       +materialized: table
+
+# Seeds are the offline stand-in for the raw source: they land in a dedicated
+# `adventure_works` (Bronze) schema that `source('adventure_works', ...)` points at.
+seeds:
+  adventureworks:
+    +schema: adventure_works
