@@ -1,0 +1,9 @@
+# Local, offline profile — DuckDB file in the project dir. No cloud credentials (NFR-1).
+# Run with the project's profiles dir: `DBT_PROFILES_DIR=. dbt build` (see README).
+adventureworks:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DBT_DUCKDB_PATH', 'adventureworks.duckdb') }}"
+      threads: 4

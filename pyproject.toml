@@ -1,7 +1,10 @@
 [project]
-name = "placeholder"
+name = "adventureworks-analytics"
 version = "0.1.0"
-description = "Add your description here"
+description = "AdventureWorks analytics-engineering deliverable — dbt-core + DuckDB dimensional model"
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = []
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "dbt-core>=1.9,<2.0",
+    "dbt-duckdb>=1.9,<2.0",
+]

@@ -1,0 +1,28 @@
+name: 'adventureworks'
+version: '1.0.0'
+config-version: 2
+
+profile: 'adventureworks'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+analysis-paths: ["analyses"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Medallion semantics via dbt-idiomatic layers (ADR-0009):
+#   staging = Silver (views) · intermediate = Silver (ephemeral) · marts = Gold (tables)
+models:
+  adventureworks:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: ephemeral
+    marts:
+      +materialized: table
