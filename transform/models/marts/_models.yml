@@ -132,3 +132,27 @@ models:
           - accepted_values:
               arguments:
                 values: ["Vista", "SuperiorCard", "Distinguish", "ColonialVoyage"]
+
+  - name: dim_sales_reason
+    description: >
+      Conformed sales reason dimension (Gold), one row per sales reason with its name and
+      category. Reached from fct_sales via bridge_order_sales_reason, not a direct fact FK
+      (ADR-0003). SCD Type 1 (ADR-0008).
+    columns:
+      - name: sales_reason_key
+        description: Hashed surrogate primary key (dbt_utils.generate_surrogate_key over sales_reason_id; ADR-0007).
+        data_tests:
+          - unique
+          - not_null
+      - name: sales_reason_id
+        description: Natural key from the source sales reason table.
+        data_tests:
+          - not_null
+      - name: sales_reason_name
+        description: Reason name (e.g. Promotion, Price, Quality).
+        data_tests:
+          - not_null
+      - name: sales_reason_type
+        description: Reason category (e.g. Marketing, Other).
+        data_tests:
+          - not_null
