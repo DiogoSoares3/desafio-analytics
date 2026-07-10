@@ -10,7 +10,7 @@
 | P2-01 | dim_geography (address + state + country) | done (PR #4) | — |
 | P2-02 | dim_product (product + subcategory + category) | done (PR #5) | — |
 | P2-03 | dim_customer (customer + person) | done (PR #6) | — |
-| P2-04 | dim_date (date_spine) | todo | — |
+| P2-04 | dim_date (date_spine) | done (PR #7) | — |
 | P2-05 | dim_credit_card | todo | — |
 | P2-06 | dim_sales_reason | todo | — |
 | P2-07 | dim_order_status | todo | — |
