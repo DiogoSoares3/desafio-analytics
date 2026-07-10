@@ -45,6 +45,7 @@ transform/                    # the dbt project (self-contained)
   macros/                     # reusable SQL
 notebooks/                    # EDA (Python)
 bi/                           # Apache Superset BI-as-code (YAML exports)
+data/                         # local DuckDB + raw exports (git-ignored, shared by dbt & notebooks)
 docs/                         # PRD, ARCHITECTURE, ADRs, CHALLENGE, phases, diagrams
 pyproject.toml  uv.lock       # Python env (shared by dbt + notebooks)
 justfile  README.md  CLAUDE.md

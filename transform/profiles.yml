@@ -5,5 +5,5 @@ adventureworks:
   outputs:
     dev:
       type: duckdb
-      path: "{{ env_var('DBT_DUCKDB_PATH', 'adventureworks.duckdb') }}"
+      path: "{{ env_var('DBT_DUCKDB_PATH', 'data/adventureworks.duckdb') }}"
       threads: 4

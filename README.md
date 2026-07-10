@@ -26,8 +26,9 @@ just check        # lint + typecheck + build + tests (what CI would run)
 ```
 
 The dbt project lives in [`transform/`](transform/); `just` runs dbt there with the project-local DuckDB
-profile (no cloud credentials). The DuckDB database is git-ignored. Everything runs offline; a grader can
-reproduce every number with `just build`. Raw dbt still works from `transform/` if you prefer.
+profile (no cloud credentials). The database is written to `data/adventureworks.duckdb` (git-ignored) and
+is shared by the dbt models and the EDA notebooks. Everything runs offline; a grader can reproduce every
+number with `just build`. Raw dbt still works from `transform/` if you prefer.
 
 ## Project status
 Built via a Spec-Driven Development loop — see [`docs/PROGRESS.md`](docs/PROGRESS.md) for the current

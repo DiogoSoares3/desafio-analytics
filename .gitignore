@@ -25,3 +25,7 @@ logs/
 *.duckdb
 *.duckdb.wal
 .user.yml
+
+# Local data (DuckDB + raw exports); keep the dir, ignore contents
+/data/*
+!/data/.gitkeep

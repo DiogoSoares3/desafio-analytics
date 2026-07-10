@@ -4,6 +4,8 @@
 # The dbt project lives in transform/; run all dbt commands against it.
 dbt_dir := "transform"
 export DBT_PROFILES_DIR := "transform"
+# Local DuckDB lives in data/ (absolute path -> deterministic regardless of cwd).
+export DBT_DUCKDB_PATH := justfile_directory() / "data" / "adventureworks.duckdb"
 
 # List available recipes
 default:
