@@ -76,8 +76,6 @@ Layering follows the medallion mapping in [ADR-0009](docs/adrs/0009-medallion-vi
 <type>(<scope>): <subject> [<issue-id>]
 
 <body — what & why>
-
-Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
 ```
 
 - `type` ∈ `feat｜fix｜docs｜chore｜refactor｜test｜build｜ci`. `scope` is the area
