@@ -1,0 +1,38 @@
+version: 2
+
+sources:
+  - name: adventure_works
+    description: >
+      Raw AdventureWorks online-sales tables (Bronze). Offline, these are stood in by dbt seeds
+      loaded into the `adventure_works` schema; in production the same source points at the real
+      curated `adventure_works` schema. Only online sales are in scope (see PRD / ADR-0002).
+    schema: adventure_works
+    tables:
+      - name: salesorderheader
+        description: One row per sales order (header). `onlineorderflag` splits online vs reseller.
+      - name: salesorderdetail
+        description: One row per order line — the grain of fct_sales (ADR-0004).
+      - name: salesorderheadersalesreason
+        description: Bridge — order to sales reason, many-to-many (ADR-0003).
+      - name: salesreason
+        description: Sales reason lookup (e.g. Promotion).
+      - name: customer
+        description: Customers; online customers link to a person (storeid null).
+      - name: person
+        description: Individual persons (names) behind online customers.
+      - name: product
+        description: Products sold.
+      - name: productsubcategory
+        description: Product subcategory lookup.
+      - name: productcategory
+        description: Product category lookup.
+      - name: address
+        description: Addresses (city + state/province) for ship-to / bill-to.
+      - name: stateprovince
+        description: State/province lookup, links to country region.
+      - name: countryregion
+        description: Country/region lookup.
+      - name: creditcard
+        description: Credit cards; `cardtype` feeds dim_credit_card.
+      - name: specialoffer
+        description: Special offers / discounts applied to order lines.
