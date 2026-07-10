@@ -6,11 +6,12 @@
 > `PRD.md` / `ARCHITECTURE.md` as needed.
 
 ## Current status
-**BUILD — Phase 2 (Dimensions), 4/7 done.** Worker #1 built + merged P2-01..P2-04 (dim_geography #4,
-dim_product #5, dim_customer #6, dim_date #7); it false-stopped on a merge hiccup (PR #7 was actually
-merged). Supervisor verified develop green (`dbt build` PASS=88; date-gap singular test present; docs +
-surrogate keys real) and fixed P2-04 bookkeeping. Worker #2 dispatched for **P2-05/06/07** (credit_card,
-sales_reason, order_status). ADRs 0001–0009; profile: subagent-per-phase.
+**Phase 2 (Dimensions) COMPLETE — clean phase boundary.** All 7 dims built + merged (PRs #4–#10):
+geography, product, customer, date, credit_card, sales_reason, order_status. Two worker subagents
+(P2-01..04, then P2-05..07); supervisor verified integrity each time. `dbt build` on develop:
+**PASS=113** (15 seeds, 7 dim tables, 11 staging views, 80 data tests), lint clean, 7/7 surrogate keys,
+fully documented. Phase DoD met. Next: **PLAN Phase 3 (Fact + reconciliation)** — must first settle the
+full-data ingestion decision (open question below). ADRs 0001–0009; profile: subagent-per-phase.
 
 ## In review (PR open, awaiting merge) — human-review policy only
 _Issues that are green with a PR open but not yet merged (`in-review`) — one line each with the PR URL.
