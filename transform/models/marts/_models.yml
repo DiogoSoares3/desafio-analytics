@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: dim_geography
+    description: >
+      Conformed geography dimension (Gold) at the grain of city + state/province + country,
+      deduped across all AdventureWorks addresses. Reused by dim_customer and by fct_sales'
+      ship-to geography FK (ADR-0005). SCD Type 1 (ADR-0008).
+    columns:
+      - name: geography_key
+        description: Hashed surrogate primary key (dbt_utils.generate_surrogate_key over city, state_province, country; ADR-0007).
+        data_tests:
+          - unique
+          - not_null
+      - name: city
+        description: City name.
+        data_tests:
+          - not_null
+      - name: state_province
+        description: State or province name.
+        data_tests:
+          - not_null
+      - name: country
+        description: Country/region name.
+        data_tests:
+          - not_null
