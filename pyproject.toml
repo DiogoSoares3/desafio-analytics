@@ -8,3 +8,33 @@ dependencies = [
     "dbt-core>=1.9,<2.0",
     "dbt-duckdb>=1.9,<2.0",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.10",
+    "pyright>=1.1.390",
+    "sqlfluff>=3.3",
+    "sqlfluff-templater-dbt>=3.3",
+    "commitizen>=4.0",
+    "prek>=0.2",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pyright]
+typeCheckingMode = "basic"
+pythonVersion = "3.12"
+venvPath = "."
+venv = ".venv"
+exclude = ["**/__pycache__", ".venv", "dbt_packages", "target"]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+tag_format = "v$version"
+version_files = ["pyproject.toml:version"]
