@@ -7,7 +7,7 @@
 | ID | Title | Status | Blocked by |
 |----|-------|--------|-----------|
 | P1-01 | dbt-core + DuckDB project scaffold | done (PR #1) | — |
-| P1-02 | Seed `adventure_works` fixtures + declare source | todo | P1-01 |
+| P1-02 | Seed `adventure_works` fixtures + declare source | done (PR #2) | P1-01 |
 | P1-03 | Source-layer tests green (`source:*`) | todo | P1-02 |
 
 ---
