@@ -17,3 +17,11 @@ wheels/
 # Obsidian (local personal vault config)
 .obsidian/
 resume.txt
+
+# dbt artifacts
+target/
+dbt_packages/
+logs/
+*.duckdb
+*.duckdb.wal
+.user.yml
