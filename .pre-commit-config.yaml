@@ -22,7 +22,7 @@ repos:
         name: sqlfluff lint
         entry: uv run sqlfluff lint
         language: system
-        files: ^models/.*\.sql$
+        files: ^transform/models/.*\.sql$
 
       - id: commitizen-check
         name: commitizen check

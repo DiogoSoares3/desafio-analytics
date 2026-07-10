@@ -31,7 +31,7 @@ typeCheckingMode = "basic"
 pythonVersion = "3.12"
 venvPath = "."
 venv = ".venv"
-exclude = ["**/__pycache__", ".venv", "dbt_packages", "target"]
+exclude = ["**/node_modules", "**/.*", "**/__pycache__", ".venv", "**/dbt_packages", "**/target"]
 
 [tool.commitizen]
 name = "cz_conventional_commits"

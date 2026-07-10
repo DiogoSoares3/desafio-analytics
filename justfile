@@ -1,8 +1,9 @@
 # AdventureWorks Analytics Engineering — task runner
 # Prefer `just <recipe>`. Run `just` with no args to list recipes.
 
-# dbt runs against the project-local DuckDB profile (no cloud credentials).
-export DBT_PROFILES_DIR := "."
+# The dbt project lives in transform/; run all dbt commands against it.
+dbt_dir := "transform"
+export DBT_PROFILES_DIR := "transform"
 
 # List available recipes
 default:
@@ -11,34 +12,34 @@ default:
 # Install Python deps (dbt + dev tools) and dbt packages
 setup:
     uv sync
-    uv run dbt deps
+    uv run dbt deps --project-dir {{dbt_dir}}
 
 # Full dbt build: seeds -> models -> tests against local DuckDB
 build:
-    uv run dbt build
+    uv run dbt build --project-dir {{dbt_dir}}
 
 # All model tests
 test:
-    uv run dbt test
+    uv run dbt test --project-dir {{dbt_dir}}
 
 # Source-layer tests only (challenge demo)
 test-source:
-    uv run dbt test --select "source:*"
+    uv run dbt test --select "source:*" --project-dir {{dbt_dir}}
 
 # Verify dbt connection/config
 debug:
-    uv run dbt debug
+    uv run dbt debug --project-dir {{dbt_dir}}
 
 # Lint everything (Python + SQL); does not modify files
 lint:
     uv run ruff check .
-    uv run sqlfluff lint models
+    uv run sqlfluff lint {{dbt_dir}}/models
 
 # Auto-format everything (Python + SQL)
 fmt:
     uv run ruff check --fix .
     uv run ruff format .
-    uv run sqlfluff fix models
+    uv run sqlfluff fix {{dbt_dir}}/models
 
 # Python type check (basic mode)
 typecheck:
@@ -53,4 +54,4 @@ commit:
 
 # Remove dbt build artifacts
 clean:
-    uv run dbt clean
+    uv run dbt clean --project-dir {{dbt_dir}}

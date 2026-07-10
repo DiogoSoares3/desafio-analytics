@@ -7,32 +7,27 @@ the business questions in [`docs/CHALLENGE.md`](docs/CHALLENGE.md) and reconcile
 
 - **Product truth:** [`docs/PRD.md`](docs/PRD.md) · **Technical truth:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - **Decisions:** [`docs/adrs/`](docs/adrs/) (ADR-0001 … ADR-0009)
-- **Layering (medallion via dbt, ADR-0009):** `staging/` (Silver, views) · `intermediate/` (Silver,
-  ephemeral) · `marts/` (Gold, tables)
+- **dbt project:** [`transform/`](transform/) · **EDA:** `notebooks/` · **BI (Superset):** `bi/`
+- **Layering (medallion via dbt, ADR-0009):** `transform/models/staging` (Silver, views) ·
+  `intermediate` (Silver, ephemeral) · `marts` (Gold, tables)
 
 ## Prerequisites
 - Python 3.11 or 3.12
 - [`uv`](https://docs.astral.sh/uv/) (dependency manager)
+- [`just`](https://github.com/casey/just) — `uv tool install rust-just`
 
 ## Setup & run
 ```bash
-# 1. Install dbt-core + dbt-duckdb into a local venv
-uv sync
-
-# 2. Use the project-local profile (DuckDB, no cloud credentials)
-export DBT_PROFILES_DIR=.
-
-# 3. Install dbt packages, verify the connection, build everything
-uv run dbt deps
-uv run dbt debug          # -> All checks passed
-uv run dbt build          # runs seeds -> models -> tests against ./adventureworks.duckdb
-
-# Source-layer tests only (challenge demo):
-uv run dbt test --select source:*
+just setup        # uv sync + dbt deps (installs dbt-core, dbt-duckdb, dev tools, dbt packages)
+just debug        # dbt debug -> All checks passed
+just build        # seeds -> models -> tests against a local DuckDB file (offline)
+just test-source  # source-layer tests only (challenge demo)
+just check        # lint + typecheck + build + tests (what CI would run)
 ```
 
-The DuckDB database is written to `./adventureworks.duckdb` (git-ignored). Everything runs offline; a
-grader can reproduce every number with the commands above.
+The dbt project lives in [`transform/`](transform/); `just` runs dbt there with the project-local DuckDB
+profile (no cloud credentials). The DuckDB database is git-ignored. Everything runs offline; a grader can
+reproduce every number with `just build`. Raw dbt still works from `transform/` if you prefer.
 
 ## Project status
 Built via a Spec-Driven Development loop — see [`docs/PROGRESS.md`](docs/PROGRESS.md) for the current

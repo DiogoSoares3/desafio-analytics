@@ -34,16 +34,22 @@ Install prerequisites once: `uv sync` (Python deps), `uv tool install rust-just`
 
 ## Repository layout
 ```
-dbt_project.yml  packages.yml  profiles.yml   # dbt project (root)
-models/
-  staging/        # Silver — stg_adventure_works__*  (views)
-  intermediate/   # Silver — int_*                   (ephemeral)
-  marts/          # Gold   — dim_* / fct_* / bridge_* (tables)
-seeds/            # tiny CSV test fixtures (no live infra in tests)
-tests/            # singular (reconciliation) tests
-macros/           # reusable SQL
-docs/             # PRD, ARCHITECTURE, ADRs, CHALLENGE, phases
+transform/                    # the dbt project (self-contained)
+  dbt_project.yml  packages.yml  profiles.yml
+  models/
+    staging/                  # Silver — stg_adventure_works__*  (views)
+    intermediate/             # Silver — int_*                   (ephemeral)
+    marts/                    # Gold   — dim_* / fct_* / bridge_* (tables)
+  seeds/                      # tiny CSV test fixtures (no live infra in tests)
+  tests/                      # singular (reconciliation) tests
+  macros/                     # reusable SQL
+notebooks/                    # EDA (Python)
+bi/                           # Apache Superset BI-as-code (YAML exports)
+docs/                         # PRD, ARCHITECTURE, ADRs, CHALLENGE, phases, diagrams
+pyproject.toml  uv.lock       # Python env (shared by dbt + notebooks)
+justfile  README.md  CLAUDE.md
 ```
+Run dbt via `just` (it targets `transform/`); avoid calling dbt raw unless debugging.
 Layering follows the medallion mapping in [ADR-0009](docs/adrs/0009-medallion-via-dbt-layers.md).
 
 ## dbt / SQL conventions
