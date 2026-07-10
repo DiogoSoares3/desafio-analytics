@@ -1,0 +1,7 @@
+status_code,status_label
+1,In process
+2,Approved
+3,Backordered
+4,Rejected
+5,Shipped
+6,Cancelled
