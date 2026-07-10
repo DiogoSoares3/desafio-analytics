@@ -156,3 +156,24 @@ models:
         description: Reason category (e.g. Marketing, Other).
         data_tests:
           - not_null
+
+  - name: dim_order_status
+    description: >
+      Conformed order status dimension (Gold), one row per AdventureWorks order status code
+      (1-6) with its human-readable label. Built from the `order_status` seed. SCD Type 1
+      (ADR-0008).
+    columns:
+      - name: order_status_key
+        description: Hashed surrogate primary key (dbt_utils.generate_surrogate_key over status_code; ADR-0007).
+        data_tests:
+          - unique
+          - not_null
+      - name: status_code
+        description: AdventureWorks order status code (1-6).
+        data_tests:
+          - unique
+          - not_null
+      - name: status_label
+        description: Human-readable order status label (e.g. Shipped, Cancelled).
+        data_tests:
+          - not_null

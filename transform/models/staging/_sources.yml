@@ -20,6 +20,14 @@ sources:
           - name: onlineorderflag
             description: True for online (in-scope) orders.
             data_tests: [not_null]
+          - name: status
+            description: Order status code (1-6); resolved by dim_order_status.
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: ref('dim_order_status')
+                    field: status_code
         data_tests:
           - dbt_expectations.expect_table_row_count_to_be_between:
               arguments:
