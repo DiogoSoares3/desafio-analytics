@@ -12,7 +12,7 @@
 | P2-03 | dim_customer (customer + person) | done (PR #6) | — |
 | P2-04 | dim_date (date_spine) | done (PR #7) | — |
 | P2-05 | dim_credit_card | done (PR #8) | — |
-| P2-06 | dim_sales_reason | todo | — |
+| P2-06 | dim_sales_reason | done (PR #9) | — |
 | P2-07 | dim_order_status | todo | — |
 
 All slices are blocked only by Phase 1 (done) and are mutually independent (conformed but no cross-dim
