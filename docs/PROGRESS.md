@@ -6,10 +6,11 @@
 > `PRD.md` / `ARCHITECTURE.md` as needed.
 
 ## Current status
-**BUILD — Phase 2 (Dimensions).** Phase 1 complete (PRs #1–#3). Phase 2 planned + backlog approved
-(7 dim slices P2-01..P2-07, all blocked only by Phase 1). ARCHITECTURE.md enriched with the star-schema
-ER diagram (implementation contract). Dispatching **one worker subagent for the whole phase** (worktree,
-branch-per-issue → PR). pyright raised to `standard`. ADRs 0001–0009; profile: subagent-per-phase.
+**BUILD — Phase 2 (Dimensions), 4/7 done.** Worker #1 built + merged P2-01..P2-04 (dim_geography #4,
+dim_product #5, dim_customer #6, dim_date #7); it false-stopped on a merge hiccup (PR #7 was actually
+merged). Supervisor verified develop green (`dbt build` PASS=88; date-gap singular test present; docs +
+surrogate keys real) and fixed P2-04 bookkeeping. Worker #2 dispatched for **P2-05/06/07** (credit_card,
+sales_reason, order_status). ADRs 0001–0009; profile: subagent-per-phase.
 
 ## In review (PR open, awaiting merge) — human-review policy only
 _Issues that are green with a PR open but not yet merged (`in-review`) — one line each with the PR URL.
