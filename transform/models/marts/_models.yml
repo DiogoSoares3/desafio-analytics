@@ -24,3 +24,30 @@ models:
         description: Country/region name.
         data_tests:
           - not_null
+
+  - name: dim_product
+    description: >
+      Conformed product dimension (Gold), one row per product, joined to its subcategory and
+      category names. SCD Type 1 (ADR-0008).
+    columns:
+      - name: product_key
+        description: Hashed surrogate primary key (dbt_utils.generate_surrogate_key over product_id; ADR-0007).
+        data_tests:
+          - unique
+          - not_null
+      - name: product_id
+        description: Natural key from the source product table.
+        data_tests:
+          - not_null
+      - name: product_name
+        description: Product name.
+        data_tests:
+          - not_null
+      - name: product_number
+        description: Product number (SKU-like business code).
+        data_tests:
+          - not_null
+      - name: subcategory_name
+        description: Product subcategory name (nullable — some products have no subcategory).
+      - name: category_name
+        description: Product category name (nullable — some products have no subcategory/category).
