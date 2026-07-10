@@ -7,7 +7,7 @@
 
 | ID | Title | Status | Blocked by |
 |----|-------|--------|-----------|
-| P2-01 | dim_geography (address + state + country) | todo | — |
+| P2-01 | dim_geography (address + state + country) | done (PR #4) | — |
 | P2-02 | dim_product (product + subcategory + category) | todo | — |
 | P2-03 | dim_customer (customer + person) | todo | — |
 | P2-04 | dim_date (date_spine) | todo | — |
