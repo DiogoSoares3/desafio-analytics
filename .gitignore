@@ -1,0 +1,19 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.pytest_cache
+
+# Virtual environments
+.venv
+
+# Claude Code: version the shared skills (the dev-loop methodology), ignore local settings/state
+.claude/*
+!.claude/skills/
+
+# Obsidian (local personal vault config)
+.obsidian/
+resume.txt
