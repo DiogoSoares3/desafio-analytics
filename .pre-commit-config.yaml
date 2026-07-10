@@ -24,6 +24,13 @@ repos:
         language: system
         files: ^transform/models/.*\.sql$
 
+      - id: pyright
+        name: pyright
+        entry: uv run pyright
+        language: system
+        types: [python]
+        pass_filenames: false
+
       - id: commitizen-check
         name: commitizen check
         entry: uv run cz check --commit-msg-file

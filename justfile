@@ -54,6 +54,14 @@ check: lint typecheck build
 commit:
     uv run cz commit
 
+# Regenerate CHANGELOG.md from the conventional-commit history
+changelog:
+    uv run cz changelog
+
+# Release: bump version from commits, update CHANGELOG.md, and create the tag
+bump:
+    uv run cz bump --changelog
+
 # Remove dbt build artifacts
 clean:
     uv run dbt clean --project-dir {{dbt_dir}}

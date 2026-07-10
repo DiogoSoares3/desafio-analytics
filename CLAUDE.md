@@ -24,9 +24,9 @@ Single entrypoint is the **`justfile`** — prefer `just <recipe>` over raw comm
 | **uv** | Python env + dependency manager (installs dbt, dev tools) | `uv sync`, `uv run …` |
 | **just** | Task runner / single entrypoint | `just`, `just build`, `just lint` |
 | **ruff** | Python lint + format | `just lint` / `just fmt` (`.py` only) |
-| **pyright** | Python type check (mode: `standard`) | `just typecheck` |
+| **pyright** | Python type check (mode: `standard`) | `just typecheck`, pre-commit hook |
 | **sqlfluff** | SQL lint + format for dbt models (dbt templater, DuckDB dialect) | `just lint` / `just fmt` |
-| **commitizen** | Conventional-commit authoring + validation | `just commit`, commit-msg hook |
+| **commitizen** | Conventional commits + CHANGELOG + versioning | `just commit`, commit-msg hook; `just changelog` / `just bump` |
 | **prek** | Git hook runner (reads `.pre-commit-config.yaml`) | `prek install`, runs on commit |
 
 Install prerequisites once: `uv sync` (Python deps), `uv tool install rust-just` (the `just` binary),
@@ -90,3 +90,5 @@ Layering follows the medallion mapping in [ADR-0009](docs/adrs/0009-medallion-vi
   `feat(dims): add dim_product with PK tests [P2-01]`.
 - Prefer `just commit` (commitizen prompt). The commit-msg hook (prek) rejects non-conforming messages.
 - One logical change per commit; keep the tree green (`just check`) before committing.
+- **CHANGELOG.md** is derived from these commits — regenerate with `just changelog`, or `just bump` at
+  release (bumps the version + writes the changelog + tags). It is *not* updated per commit.
