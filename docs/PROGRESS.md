@@ -6,10 +6,9 @@
 > `PRD.md` / `ARCHITECTURE.md` as needed.
 
 ## Current status
-**PLAN done for Phase 1 (Foundation) — paused at backlog-confirm gate.** Both baselines validated
-(2026-07-10). `docs/phases/phase-1/prd.md` + `backlog.md` written (3 issues: P1-01 scaffold →
-P1-02 seeds+source → P1-03 source tests). Awaiting user approval of the backlog before BUILD.
-`develop` branch not yet created. ADRs 0001–0009 accepted.
+**BUILD — Phase 1 (Foundation).** Backlog approved. `develop` created off `main` (main untouched);
+spec baseline committed. **P1-01 done** (scaffold, PR #1 merged). Next: P1-02 (seeds + source).
+ADRs 0001–0009 accepted.
 
 ## In review (PR open, awaiting merge) — human-review policy only
 _Issues that are green with a PR open but not yet merged (`in-review`) — one line each with the PR URL.
