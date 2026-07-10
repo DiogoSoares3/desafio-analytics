@@ -13,7 +13,7 @@
 | P2-04 | dim_date (date_spine) | done (PR #7) | — |
 | P2-05 | dim_credit_card | done (PR #8) | — |
 | P2-06 | dim_sales_reason | done (PR #9) | — |
-| P2-07 | dim_order_status | todo | — |
+| P2-07 | dim_order_status | done (PR #10) | — |
 
 All slices are blocked only by Phase 1 (done) and are mutually independent (conformed but no cross-dim
 FK except geography, which P2-03 may reference if home-geo is included — optional, ADR-0005).
