@@ -51,3 +51,22 @@ models:
         description: Product subcategory name (nullable — some products have no subcategory).
       - name: category_name
         description: Product category name (nullable — some products have no subcategory/category).
+
+  - name: dim_customer
+    description: >
+      Conformed customer dimension (Gold) — **individuals only** (online customers: `person`-backed,
+      `storeid` is null; resellers excluded, online-only scope). SCD Type 1 (ADR-0008).
+    columns:
+      - name: customer_key
+        description: Hashed surrogate primary key (dbt_utils.generate_surrogate_key over customer_id; ADR-0007).
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: Natural key from the source customer table.
+        data_tests:
+          - not_null
+      - name: full_name
+        description: Customer's full name (person first_name + last_name).
+        data_tests:
+          - not_null
