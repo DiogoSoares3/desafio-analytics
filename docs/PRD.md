@@ -16,10 +16,18 @@ simultaneously (1) answer the business questions, (2) prove its numbers are trus
 a skeptical commercial leader by showing data that moves *her* results.
 
 ## Solution
-A reliable, reproducible **dimensional model over the `adventure_works` online-sales data** (dbt-core +
-DuckDB, fully testable offline), surfaced through an **Apache Superset dashboard (BI-as-code)** that
-answers questions a–f with the required filters and foregrounds a small set of commercial KPIs. Trust is
-earned by an **exact reconciliation test** to the audited 2011 figure plus source/PK/data-quality tests.
+A reliable, reproducible **dimensional model over the `adventure_works` sales data — all channels
+(online + reseller)** (dbt-core + DuckDB, fully testable offline), surfaced through an **Apache Superset
+dashboard (BI-as-code)** that answers questions a–f with the required filters (including a **sales
+channel** filter) and foregrounds a small set of commercial KPIs. Trust is earned by an **exact
+reconciliation test** to the audited 2011 figure plus source/PK/data-quality tests.
+
+> **Scope resolved empirically (2026-07-11).** The audited 2011 gross `$12,646,112.16` is the sum over
+> **all** sales channels (online $3.86M + reseller $8.78M); online-only totals $3.86M and does not
+> reconcile. Per this PRD's own rule — *"the 2011 reconciliation figure defines the exact included set"*
+> — v1 scope is **all sales**, with **channel (online/reseller) as a filterable attribute** so the
+> commercial view can still foreground online. Supersedes the earlier online-only assumption. See
+> [ADR-0010](adrs/0010-sales-channel-scope.md).
 The story delivered to Silvana: concrete, filterable, audited numbers about *her* products, customers,
 cities, and promotions — plus actionable recommendations.
 
@@ -70,7 +78,7 @@ Every capability sits in exactly one bucket. **Won't (this version)** *is* the o
 
 | Priority | Capability | Requirements |
 |---|---|---|
-| **Must** | Conformed dimensional model over `adventure_works` online sales (7 dims + sales fact) | FR-1, FR-2, NFR-1 |
+| **Must** | Conformed dimensional model over `adventure_works` sales — **all channels** (7 dims + sales fact), with online/reseller channel as a filterable attribute | FR-1, FR-2, NFR-1 |
 | **Must** | Exact 2011 gross-sales reconciliation to $12,646,112.16 (per ADR-0001) | FR-3, NFR-2 |
 | **Must** | Source tests, PK tests, and data-quality tests all green | FR-4, NFR-2 |
 | **Must** | Model + column documentation in the data marts | FR-5, NFR-4 |
@@ -83,7 +91,6 @@ Every capability sits in exactly one bucket. **Won't (this version)** *is* the o
 | **Should** | Conceptual DW diagram (PDF) with source→mart lineage **[manual/external]** | FR-13 |
 | **Should** | Presentation slides + demo video + Figma mockup **[manual/external]** | FR-14 |
 | **Could** | Data-project plan PDF (objectives, stakeholders, risks/ROI — addresses Silvana's skepticism) **[manual/external]** | FR-15 |
-| **Won't (this version)** | Reseller sales channel (online-only in v1) | — |
 | **Won't (this version)** | Integration of other source systems (SAP / Salesforce / Google Analytics / WordPress) — conceptual mention only | — |
 | **Won't (this version)** | Cloud deployment (Databricks / dbt Cloud) — local DuckDB is the reproducible target | — |
 | **Won't (this version)** | Power BI or Databricks AI/BI dashboards (superseded by Superset, ADR-0002) | — |
@@ -95,11 +102,14 @@ Every capability sits in exactly one bucket. **Won't (this version)** *is* the o
 ## Requirements
 
 ### Functional (FR-n)
-- `FR-1` — Model **seven conformed dimensions**: product, customer, date, geography (city/state/country),
-  credit-card (card type), sales reason, order status. *(Sales-reason is many-to-many with orders —
-  resolution flagged for `ARCHITECTURE.md`.)*
-- `FR-2` — Model a **sales fact** at the agreed grain over online orders (`OnlineOrderFlag`), joinable to
-  all seven dimensions, exposing order count, quantity, gross revenue, discount, and net revenue metrics.
+- `FR-1` — Model **seven conformed dimensions**: product, customer (individual **and** store customers —
+  reseller orders are store-backed), date, geography (city/state/country), credit-card (card type; with an
+  **"N/A" member** for reseller lines that have no card), sales reason, order status. *(Sales-reason is
+  many-to-many with orders — resolution flagged for `ARCHITECTURE.md`.)*
+- `FR-2` — Model a **sales fact** at the agreed grain over **all sales orders (online + reseller)**,
+  joinable to all seven dimensions, exposing order count, quantity, gross revenue, discount, and net
+  revenue metrics, and carrying **sales channel (online/reseller via `OnlineOrderFlag`) as a filterable
+  attribute** so the commercial view can foreground online.
 - `FR-3` — Compute **gross sales** as pre-discount, pre-tax, pre-freight line revenue (`UnitPrice ×
   OrderQty` at line level) per ADR-0001, and **reconcile 2011 gross sales to $12,646,112.16 exactly
   (zero tolerance)** via an automated test.
@@ -111,7 +121,7 @@ Every capability sits in exactly one bucket. **Won't (this version)** *is* the o
   customers (c); top-5 cities (d); orders/quantity/value time series by month & year (e); top product by
   units for the "Promotion" sales reason (f).
 - `FR-7` — Provide **dashboard filters** for product, card type, sales reason, order date, customer,
-  order status, city, state, and country.
+  order status, city, state, country, and **sales channel (online/reseller)**.
 - `FR-8` — Present the **core commercial KPIs**: Total Sales Revenue, Number of Orders, Units Sold,
   Average Order Value (gross − discounts ÷ orders), Top Products/Customers/Cities by revenue, revenue
   trend by month/year, and promotion (discount) impact — with **Total Revenue, AOV, and Promotion-impact
@@ -152,8 +162,11 @@ v1 is done when **all** hold:
    slides, video. *(FR-11–FR-14)*
 
 ## Notes
-- **Channel:** v1 is **online sales only** (`SalesOrderHeader.OnlineOrderFlag`), confirmed empirically
-  during modeling; the 2011 reconciliation figure defines the exact included set. Reseller = Won't.
+- **Channel:** v1 is **all sales** (online + reseller). Confirmed empirically 2026-07-11: 2011 all-sales
+  gross = `$12,646,112.16` (matches the audit) vs online-only `$3,863,120.21` (does not); per this PRD's
+  rule the reconciliation figure defines the included set → all channels. `OnlineOrderFlag` is retained
+  as a **filterable channel attribute** on the fact so the commercial view can foreground online.
+  See [ADR-0010](adrs/0010-sales-channel-scope.md).
 - **Open questions for `ARCHITECTURE.md`:** (1) sales-reason many-to-many resolution (bridge vs
   primary-reason) and its effect on question f ("Promotion"); (2) exact fact grain (line vs header);
   (3) date-spine range; (4) geography conformance across customer/ship-to addresses. These are

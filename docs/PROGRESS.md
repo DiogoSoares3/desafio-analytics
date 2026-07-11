@@ -6,33 +6,45 @@
 > `PRD.md` / `ARCHITECTURE.md` as needed.
 
 ## Current status
-**Phase 2 (Dimensions) COMPLETE — clean phase boundary.** All 7 dims built + merged (PRs #4–#10):
-geography, product, customer, date, credit_card, sales_reason, order_status. Two worker subagents
-(P2-01..04, then P2-05..07); supervisor verified integrity each time. `dbt build` on develop:
-**PASS=113** (15 seeds, 7 dim tables, 11 staging views, 80 data tests), lint clean, 7/7 surrogate keys,
-fully documented. Phase DoD met. Next: **PLAN Phase 3 (Fact + reconciliation)** — must first settle the
-full-data ingestion decision (open question below). ADRs 0001–0009; profile: subagent-per-phase.
+**Phase 3 (Fact + reconciliation) IN PROGRESS.** P3-01 **done + supervisor-verified** (PR #11): canonical
+AdventureWorks loaded to committed `data/adventure_works/*.parquet`, source repointed via `read_parquet`,
+`dbt build` PASS=99 on real data. I independently confirmed **2011 all-sales gross = $12,646,112.16**.
 
-## In review (PR open, awaiting merge) — human-review policy only
-_Issues that are green with a PR open but not yet merged (`in-review`) — one line each with the PR URL.
-Dependents stay blocked until their blocker here is merged (`done`). Empty under `auto-merge`, where
-issues land straight to `done`._
+**SCOPE AMENDED (2026-07-11): all channels, not online-only.** P3-01 proved the audited figure is all-sales
+(online-only = $3.86M, does not reconcile). PRD + ADR-0001 + ARCHITECTURE amended; **ADR-0010** records it.
+Cascade: `fct_sales` covers online+reseller with `is_online` filter; **P3-05** added to rework `dim_customer`
+(+stores) and `dim_credit_card` (+"N/A" member) before P3-03. ADRs now 0001–0010. Profile knobs:
+auto-merge · handoff=auto · subagent-per-phase (worktree) · verifier on.
+
+**Next:** dispatch Phase-3 worker(s) — P3-05 + P3-02 (parallel) → P3-03 (fct, all channels) → P3-04 (recon).
+
+## Tactical decisions (reversible; recorded here, not ADRs)
+- **Data = canonical public Microsoft AdventureWorks; DuckDB-only (no Postgres).** The ERD is the stock
+  AW 2008 OLTP schema and `$12,646,112.16` is the well-known AW figure, so the challenge data is the
+  public MS sample — a download, not the user's DB. P3-01 loads the in-scope tables straight into DuckDB
+  and commits `data/adventure_works/*.parquet` (offline source-of-record); dbt reads them via
+  `external_location` (`read_parquet`), so `source()` + staging stay verbatim. **No Postgres, no
+  docker-compose, no ADR** — Postgres was a wrong turn (the challenge only *describes* a pg source; our
+  warehouse is DuckDB by ADR-0002/0009).
+- ⚠️ **Date-shift caveat:** the *current* MS CSV release shifts OrderDate to ~2022+ (no 2011). P3-01 must
+  source a fixed-date (2011–2014) AdventureWorks; the 2011 reconciliation is the oracle for the right set.
+
+## In review (PR open, awaiting merge) — n/a under auto-merge
+_Empty: auto-merge lands issues straight to `done`._
 
 ## Latest handoff
-_Path to the most recent `/handoff` file in OS temp, or "none"._
+_none — Phase 2 closed at a clean boundary; files describe the position._
 
 ## Next actions
-1. **User approves/edits the Phase-1 backlog** (backlog-review = confirm).
-2. Resolve the open question below (full-data ingestion for reconciliation) — likely a Phase-3 concern,
-   but confirm now so the seed strategy is right.
-3. On approval: create `develop` off `main`, commit the spec baseline, then BUILD P1-01.
+1. Phase-3 backlog **approved** (confirm gate passed).
+2. **Dispatch a worker subagent for P3-01** (worktree) — acquire canonical fixed-date AdventureWorks →
+   DuckDB Parquet, prove 2011 gross = $12,646,112.16, repoint source. Supervisor verifies the
+   reconciliation before trusting the merge. Then dispatch P3-02/03, then P3-04.
 
 ## Open questions
-- **Full-data ingestion for the 2011 reconciliation (EL).** The seeds are tiny test fixtures. The
-  $12,646,112.16 reconciliation needs the *full* `adventure_works` data in DuckDB. How does it land —
-  a load script from the source Postgres, a committed Parquet/CSV export, or DuckDB reading Postgres
-  directly? ARCHITECTURE marks EL "upstream/out of scope"; this is the gap. Provisionally a Phase-3
-  concern (reconciliation lives with the fact), but the answer shapes the seed/data strategy now.
+_None blocking._ The full-data ingestion question is resolved (tactical Parquet form above; the
+architecture already fixed the "seeds for units / full dataset for reconciliation" split).
 
 ## Worklog (most recent first)
-_One line per slice: what shipped + gate result + PR URL. Note when a human merged it (`in-review` → `done`)._
+- **Phase 2 (Dimensions) complete** — 7/7 dims, PRs #4–#10, `dbt build` PASS=113 on develop @ `dec231d`.
+- Phase 1 (Foundation) complete — P1-01..03, sources + seeds + source tests green.

@@ -178,13 +178,15 @@ native dbt mechanisms; the green signal is `dbt build`.
 ### Marts — dimensions (Gold, tables; SCD Type 1 per [ADR-0008](adrs/0008-scd-type-1.md))
 Surrogate PKs via `dbt_utils.generate_surrogate_key` ([ADR-0007](adrs/0007-surrogate-keys.md)).
 - `dim_product` — product natural key, name, category/subcategory, model.
-- `dim_customer` — **individuals only** (`Customer.PersonID`, `StoreID IS NULL`); name + conformed
-  home-geography ref (resellers excluded — online-only scope).
+- `dim_customer` — **individual and store customers** (`Customer.PersonID` for online, `Customer.StoreID`
+  for reseller), with a `customer_type` attribute; name + conformed home-geography ref (all-channel scope,
+  [ADR-0010](adrs/0010-sales-channel-scope.md)).
 - `dim_date` — `dbt_utils.date_spine`, dynamic min→max order year, day grain, full calendar attributes
   ([ADR-0006](adrs/0006-date-spine.md)).
 - `dim_geography` — city + state/province + country, deduped; conformed, reused by `dim_customer`
   ([ADR-0005](adrs/0005-geography-conformance-ship-to.md)).
-- `dim_credit_card` — card type.
+- `dim_credit_card` — card type; includes an **"N/A" member** for reseller lines with no card
+  ([ADR-0010](adrs/0010-sales-channel-scope.md)), so the fact FK stays not-null.
 - `dim_sales_reason` — reason name/type (reached via the bridge, not a fact FK).
 - `dim_order_status` — order status domain.
 
@@ -192,8 +194,9 @@ Surrogate PKs via `dbt_utils.generate_surrogate_key` ([ADR-0007](adrs/0007-surro
 - `bridge_order_sales_reason` — grain: order × reason; multi-valued dimension
   ([ADR-0003](adrs/0003-sales-reason-multi-valued-bridge.md)).
 - `fct_sales` — **order-line grain** ([ADR-0004](adrs/0004-sales-fact-grain-order-line.md)), one row per
-  `SalesOrderDetailID`. FKs: the seven dim surrogate keys (geography = **ship-to**, ADR-0005). Degenerate
-  dims: `sales_order_number`, order-line number. Additive measures (line grain):
+  `SalesOrderDetailID`, over **all sales channels** (online + reseller, [ADR-0010](adrs/0010-sales-channel-scope.md)).
+  FKs: the seven dim surrogate keys (geography = **ship-to**, ADR-0005). Degenerate dims:
+  `sales_order_number`, order-line number, and **`is_online`** (channel filter). Additive measures (line grain):
   `gross_revenue = UnitPrice × OrderQty` (ADR-0001); `discount_amount = UnitPriceDiscount × UnitPrice ×
   OrderQty`; `net_revenue = gross_revenue − discount_amount` (= source `LineTotal`); `order_qty` (units).
   Order count = `count(distinct sales_order_number)`; **AOV** = `(gross − discount) ÷ distinct orders`
@@ -201,7 +204,8 @@ Surrogate PKs via `dbt_utils.generate_surrogate_key` ([ADR-0007](adrs/0007-surro
 
 ### Staging / intermediate (Silver)
 - `staging/` — one view per source table, snake_case rename + type cast + light cleanup; the seam where
-  the raw `adventure_works` schema is normalized. Online filter (`OnlineOrderFlag`) applied here.
+  the raw `adventure_works` schema is normalized. **No channel filter** — `OnlineOrderFlag` is carried
+  through as the `is_online` attribute (all-channel scope, ADR-0010).
 - `intermediate/` — ephemeral joins, gross/discount computation, bridge prep; not exposed.
 
 ### BI (Apache Superset, [ADR-0002](adrs/0002-bi-tool-apache-superset.md))
@@ -221,6 +225,7 @@ a–f with the required filters.
 | [0007](adrs/0007-surrogate-keys.md) | Hashed surrogate keys as dim PKs; degenerate order/line dims |
 | [0008](adrs/0008-scd-type-1.md) | SCD Type 1 (overwrite) for all dims |
 | [0009](adrs/0009-medallion-via-dbt-layers.md) | Medallion semantics via dbt-idiomatic layers |
+| [0010](adrs/0010-sales-channel-scope.md) | Sales scope = all channels; `is_online` as a filterable attribute |
 
 ## Discarded alternatives
 | Considered | Rejected because |

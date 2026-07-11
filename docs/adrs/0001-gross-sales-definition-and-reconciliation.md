@@ -18,6 +18,9 @@ anchor of the whole deliverable (the régua), so it must be fixed before the sal
   exactly (to the cent, zero tolerance)**.
 - The exact source columns/formula will be confirmed empirically against the raw `adventure_works` data
   during the fact-modeling phase and locked here if they differ from the above.
+- **Empirically locked (2026-07-11):** `sum(UnitPrice × OrderQty)` over **all** 2011 sales orders (online
+  + reseller) = **$12,646,112.16** exactly — the audited basis is **all channels**, not online-only
+  (online-only = $3,863,120.21). Scope amended accordingly ([ADR-0010](0010-sales-channel-scope.md)).
 
 ## Discarded alternatives
 | Considered | Rejected because |

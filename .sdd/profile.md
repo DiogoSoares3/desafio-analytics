@@ -73,8 +73,8 @@ A Must that depends on a Should still waits on its blocker (MoSCoW prioritizes, 
   outer behaviour test using the seam/mechanism named in `ARCHITECTURE.md`/ADRs — for this project a dbt
   singular/schema test asserting the slice's number or shape. No matrix here — the arch doc owns "how a
   behaviour is tested in this project".
-- **Fresh-agent mode:** `subagent` — spawn a fresh agent per phase **in its own git worktree on the issue
-  branch**. Uses the branch-per-issue flow below.
+- **Fresh-agent mode:** `subagent` — spawn a fresh agent per **phase** with each issue inside the backlog's
+  phase a git worktree branch. Uses the branch-per-issue flow below.
 - **Handoff mode:** `auto` — self-continuing via a flat supervisor that respawns sequential worker
   subagents from files + handoff. Requires subagent support (available in this host). Files + handoff are
   the durable state; the context gate is a checkpoint, not a stop.
