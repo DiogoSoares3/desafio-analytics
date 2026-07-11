@@ -29,3 +29,7 @@ logs/
 # Local data (DuckDB + raw exports); keep the dir, ignore contents
 /data/*
 !/data/.gitkeep
+# ...but commit the AdventureWorks Parquet source-of-record (the grader gets it in the clone)
+!/data/adventure_works/
+/data/adventure_works/*
+!/data/adventure_works/*.parquet
