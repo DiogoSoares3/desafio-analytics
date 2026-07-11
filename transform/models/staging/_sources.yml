@@ -3,10 +3,14 @@ version: 2
 sources:
   - name: adventure_works
     description: >
-      Raw AdventureWorks online-sales tables (Bronze). Offline, these are stood in by dbt seeds
-      loaded into the `adventure_works` schema; in production the same source points at the real
-      curated `adventure_works` schema. Only online sales are in scope (see PRD / ADR-0002).
+      Canonical Microsoft AdventureWorks OLTP tables (Bronze). Offline, each table reads its
+      committed `data/adventure_works/<table>.parquet` (the source-of-record produced by
+      `just load` / `scripts/load_adventure_works.py`) via dbt-duckdb `external_location`
+      (`read_parquet`). The full order set is present here; only online sales are carried into
+      the marts (see PRD / ADR-0002). Paths are relative to the repo root (dbt is invoked there).
     schema: adventure_works
+    meta:
+      external_location: "read_parquet('data/adventure_works/{name}.parquet')"
     tables:
       - name: salesorderheader
         description: One row per sales order (header). `onlineorderflag` splits online vs reseller.

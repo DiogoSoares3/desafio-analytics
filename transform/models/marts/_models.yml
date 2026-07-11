@@ -131,7 +131,7 @@ models:
           - not_null
           - accepted_values:
               arguments:
-                values: ["Vista", "SuperiorCard", "Distinguish", "ColonialVoyage"]
+                values: ["Vista", "SuperiorCard", "Distinguish", "ColonialVoice"]
 
   - name: dim_sales_reason
     description: >

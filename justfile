@@ -16,6 +16,10 @@ setup:
     uv sync
     uv run dbt deps --project-dir {{dbt_dir}}
 
+# Acquire canonical AdventureWorks -> committed data/adventure_works/*.parquet (source-of-record)
+load:
+    uv run python scripts/load_adventure_works.py
+
 # Full dbt build: seeds -> models -> tests against local DuckDB
 build:
     uv run dbt build --project-dir {{dbt_dir}}
