@@ -39,11 +39,11 @@ EXPECTED_TOP_N = 5
 # Direct aggregate over fct_sales joined to dim_geography (ship-to, ADR-0005), written independently
 # of the bi/ YAML -- the reconciliation oracle the P4-05 Gherkin scenario asserts against.
 DIRECT_TOP_CITY_SQL = """
-    select geography.city, sum(fct_sales.gross_revenue) as total_transaction_value
+    select dim_geography.city, sum(fct_sales.gross_revenue) as total_transaction_value
     from fct_sales
     inner join dim_geography
         on fct_sales.geography_key = dim_geography.geography_key
-    group by geography.city
+    group by dim_geography.city
     order by total_transaction_value desc
     limit 1
 """
