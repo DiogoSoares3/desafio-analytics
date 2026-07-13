@@ -1,0 +1,251 @@
+table_name: question_a_sales_detail
+schema: main
+description: >-
+  Virtual dataset (P4-02) answering CHALLENGE.md question a -- orders/quantity/value sliced by
+  product, card type, sales date, customer, status, city, state, country, and sales channel.
+  One row per fct_sales order line joined to its six single-valued dims (product, credit card,
+  order status, geography [ship-to, ADR-0005], date, customer) -- no bridge join here, so no
+  fan-out (sales reason is a separate dataset, question_a_sales_by_reason.yaml, ADR-0003). Same
+  tested fct_sales grain -- no parallel metric layer (NFR-3).
+main_dttm_col: date_day
+default_endpoint: null
+offset: 0
+cache_timeout: null
+sql: >-
+  select
+      f.sales_fact_key,
+      f.sales_order_number,
+      f.is_online,
+      f.order_qty,
+      f.gross_revenue,
+      f.discount_amount,
+      f.net_revenue,
+      p.product_name,
+      p.category_name,
+      p.subcategory_name,
+      cc.card_type,
+      os.status_label,
+      g.city,
+      g.state_province,
+      g.country,
+      d.date_day,
+      d.year,
+      d.month_name,
+      d.year_month,
+      c.full_name as customer_name,
+      c.customer_type
+  from fct_sales f
+  left join dim_product p on f.product_key = p.product_key
+  left join dim_credit_card cc on f.credit_card_key = cc.credit_card_key
+  left join dim_order_status os on f.order_status_key = os.order_status_key
+  left join dim_geography g on f.geography_key = g.geography_key
+  left join dim_date d on f.date_key = d.date_key
+  left join dim_customer c on f.customer_key = c.customer_key
+params: null
+template_params: null
+filter_select_enabled: true
+fetch_values_predicate: null
+extra: null
+uuid: 018c4e65-289c-4f34-9861-6606f5f8051a
+version: 1.0.0
+database_uuid: 834123f4-6949-458f-aa23-1f4a3dc03c37
+columns:
+  - column_name: sales_fact_key
+    verbose_name: Sales Fact Key
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: false
+    filterable: false
+    description: Hashed surrogate PK of the underlying fct_sales line (dbt_utils.generate_surrogate_key over salesorderdetailid).
+  - column_name: sales_order_number
+    verbose_name: Sales Order Number
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Degenerate dimension -- business order number.
+  - column_name: is_online
+    verbose_name: Sales Channel (Online)
+    is_dttm: false
+    is_active: true
+    type: BOOLEAN
+    groupby: true
+    filterable: true
+    description: Channel attribute (ADR-0010) -- true for online orders, false for reseller orders.
+  - column_name: order_qty
+    verbose_name: Order Quantity
+    is_dttm: false
+    is_active: true
+    type: BIGINT
+    groupby: false
+    filterable: true
+    description: Units ordered on the line.
+  - column_name: gross_revenue
+    verbose_name: Gross Revenue
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: true
+    description: Pre-discount/pre-tax/pre-freight line revenue -- UnitPrice x OrderQty (ADR-0001).
+  - column_name: discount_amount
+    verbose_name: Discount Amount
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: true
+    description: Line discount -- UnitPriceDiscount x UnitPrice x OrderQty.
+  - column_name: net_revenue
+    verbose_name: Net Revenue
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: true
+    description: gross_revenue - discount_amount (reconciles to source LineTotal, ADR-0001).
+  - column_name: product_name
+    verbose_name: Product
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Product name (dim_product), required slice for question a.
+  - column_name: category_name
+    verbose_name: Product Category
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Product category name (dim_product), nullable.
+  - column_name: subcategory_name
+    verbose_name: Product Subcategory
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Product subcategory name (dim_product), nullable.
+  - column_name: card_type
+    verbose_name: Card Type
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: >-
+      Credit card type (dim_credit_card), required slice for question a. "N/A" for card-less
+      reseller lines (ADR-0010).
+  - column_name: status_label
+    verbose_name: Order Status
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Human-readable order status (dim_order_status), required slice for question a.
+  - column_name: city
+    verbose_name: City
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Ship-to city (dim_geography, ADR-0005), required slice for question a.
+  - column_name: state_province
+    verbose_name: State/Province
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Ship-to state/province (dim_geography, ADR-0005), required slice for question a.
+  - column_name: country
+    verbose_name: Country
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Ship-to country (dim_geography, ADR-0005), required slice for question a.
+  - column_name: date_day
+    verbose_name: Order Date
+    is_dttm: true
+    is_active: true
+    type: DATE
+    groupby: true
+    filterable: true
+    description: Order date (dim_date), day grain -- required "sales date" slice for question a.
+  - column_name: year
+    verbose_name: Order Year
+    is_dttm: false
+    is_active: true
+    type: BIGINT
+    groupby: true
+    filterable: true
+    description: Order year (dim_date).
+  - column_name: month_name
+    verbose_name: Order Month
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Full order month name (dim_date).
+  - column_name: year_month
+    verbose_name: Order Year-Month
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Order year-month string YYYY-MM (dim_date) -- convenience "sales date" grain.
+  - column_name: customer_name
+    verbose_name: Customer
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Customer display name (dim_customer, all channels ADR-0010), required slice for question a.
+  - column_name: customer_type
+    verbose_name: Customer Type
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: >-
+      "individual" (online) or "store" (reseller) (dim_customer, ADR-0010).
+metrics:
+  - metric_name: number_of_orders
+    verbose_name: Number of Orders
+    metric_type: null
+    expression: COUNT(DISTINCT sales_order_number)
+    description: >-
+      Distinct order count for question a. Definition: count(distinct sales_order_number) over
+      fct_sales, same formula as the P4-01 hero KPI.
+    d3format: ",d"
+    warning_text: null
+  - metric_name: units_purchased
+    verbose_name: Units Purchased
+    metric_type: null
+    expression: SUM(order_qty)
+    description: >-
+      Total units ordered for question a. Definition: sum(order_qty) over fct_sales, same
+      formula as the P4-01 hero KPI.
+    d3format: ",d"
+    warning_text: null
+  - metric_name: total_transaction_value
+    verbose_name: Total Transaction Value
+    metric_type: null
+    expression: SUM(gross_revenue)
+    description: >-
+      Total gross transaction value for question a. Definition: sum(gross_revenue) over
+      fct_sales (ADR-0001), same formula as the P4-01 hero KPI "Total Sales Revenue".
+    d3format: "$,.2f"
+    warning_text: null
