@@ -36,6 +36,10 @@ test-source:
 debug:
     uv run dbt debug --project-dir {{dbt_dir}}
 
+# Execute the EDA notebook end-to-end and check its required chart+commentary sections (P4-09)
+eda:
+    uv run python scripts/check_eda_notebook.py
+
 # Lint everything (Python + SQL); does not modify files
 lint:
     uv run ruff check .

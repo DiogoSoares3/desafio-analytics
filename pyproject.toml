@@ -7,6 +7,12 @@ requires-python = ">=3.11,<3.13"
 dependencies = [
     "dbt-core>=1.9,<2.0",
     "dbt-duckdb>=1.9,<2.0",
+    "duckdb>=1.5,<2.0",
+    "pandas>=2.2",
+    "matplotlib>=3.9",
+    "jupyter>=1.1",
+    "nbformat>=5.10",
+    "nbclient>=0.10",
 ]
 
 [dependency-groups]
