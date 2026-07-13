@@ -29,8 +29,37 @@ bi/
   charts/question_d_top5_cities.yaml                # P4-05 -- top-5-cities table chart
   charts/question_e_orders_qty_value_by_month.yaml  # P4-06 -- question-e time-series chart
   charts/question_f_top_product_promotion.yaml      # P4-07 -- question f: top product, "On Promotion"
+  dashboards/adventure_works_sales.yaml             # P4-08 -- the assembled dashboard bundle
 ```
-The last remaining issue (P4-08) assembles all of the above into one committed `dashboards/*.yaml`.
+
+## Dashboard — "Adventure Works — Sales" (`P4-08`)
+
+`bi/dashboards/adventure_works_sales.yaml` is the deliverable-equivalence bundle (`FR-9`,
+`ADR-0002`) assembling **every** chart from `P4-01`-`P4-07` onto one committed Superset dashboard:
+the five hero-KPI tiles (Total Sales Revenue, Number of Orders, Units Sold, Average Order Value,
+Promotion-Impact Revenue) and the seven charts answering `CHALLENGE.md` questions a-f (question a
+has two charts -- detail + sales-reason slice, `P4-02`). Nothing built in the earlier issues is
+left off.
+
+A dashboard-wide native filter set realizes `FR-7`: **Sales Channel** (`is_online`,
+online/reseller) plus **Product**, **Card Type**, **Sales Reason**, **Order Date**, **Customer**,
+**Order Status**, **City**, **State/Province**, and **Country** -- each targets a real, declared
+`filterable: true` column on `question_a_sales_detail` (the dataset carrying the full
+required-filter column set, `P4-02`) or, for Sales Reason, `question_a_sales_by_reason` (kept
+separate to avoid fanning out the other dims via the bridge join, `ADR-0003`). Native filters
+apply dashboard-wide by default (Superset cross-filter scoping over `ROOT_ID`), so narrowing e.g.
+sales channel = online reshapes every hero KPI and every question chart at once.
+
+`scripts/validate_dashboard_bundle.py` is the outer BDD test for the dashboard bundle (`P4-08`):
+it reads the committed YAML directly (no live Superset needed, same pattern as the other
+`validate_*` scripts) and asserts (1) every chart currently under `bi/charts/*.yaml` is
+referenced in the dashboard's `position` tree, (2) every `FR-7` filter targets a real, filterable
+column on a real, committed dataset, and (3) every metric used by any dataset the dashboard's
+charts read is documented in this file's metric-definitions tables below.
+
+```
+uv run python scripts/validate_dashboard_bundle.py
+```
 
 ## Question a (P4-02) — orders/quantity/value sliced and filtered
 
@@ -112,6 +141,11 @@ single value. The `question_d_top5_cities` chart (`table`, `query_mode: aggregat
    Value" (P4-04), "Question d: Top 5 Cities by Revenue" (P4-05), "Question e: Orders, Quantity &
    Value by Month/Year" (P4-06), and "Question f: Top Product -- On Promotion" (P4-07, answers
    `CHALLENGE.md` question f) under Charts.
+6. Open **Dashboards → "Adventure Works — Sales"** (`bi/dashboards/adventure_works_sales.yaml`,
+   `P4-08`) to see every chart above assembled onto one page, with the dashboard-wide Sales
+   Channel / Product / Card Type / Sales Reason / Order Date / Customer / Order Status / City /
+   State / Country filters (`FR-7`) in the filter bar — narrowing any one of them reshapes every
+   chart and hero KPI on the dashboard at once (Superset native cross-filter scoping).
 
 ## Verifying reconciliation without a running Superset
 
