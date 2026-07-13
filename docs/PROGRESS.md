@@ -6,11 +6,14 @@
 > `PRD.md` / `ARCHITECTURE.md` as needed.
 
 ## SDD-CURSOR
-- **Phase:** 4 (Serving)
+- **Phase:** 4 (Serving) — **COMPLETE, 10/10 issues done.**
 - **Doing:** none
-- **Next:** P4-10 (commercial recommendations doc) — its only blockers, P4-08 and P4-09, are both
-  **done**. Phase 4 is otherwise fully drained (P4-01..P4-09 all done).
-- **Stop-reason:** none — P4-01..P4-09 all landed green; P4-10 is the only remaining Phase-4 issue.
+- **Next:** none — the Phase 4 backlog, and with it the whole SDD-loop issue backlog across all 4
+  phases (Foundation, Dimensions, Fact, Serving), is fully drained. See "Project status" below: the
+  loop's automated scope is done; a handful of root-PRD deliverables are explicitly manual/external
+  and were never cut into the loop's backlog.
+- **Stop-reason:** none — P4-10 (the last issue in the last phase) landed green. No issue remains to
+  dispatch; next action is a human/orchestrator review of the root PRD's manual/external items.
 
 ## Current status
 **Phase 3 (Fact + reconciliation) COMPLETE — 5/5 issues done** (P3-01 canonical AdventureWorks →
@@ -216,6 +219,45 @@ against the committed YAML + the built DuckDB file, no live server required. Inn
 per the issue (packaging/assembly + documentation, no unit-decomposable logic). **Unblocks
 P4-10** (alongside the already-done P4-09) — Phase 4 is now fully drained except P4-10.
 
+**P4-10 done**: `docs/recommendations.md` — six prioritized, actionable commercial recommendations
+for Adventure Works (`FR-10`), explicitly framed for Silvana Teixeira (PRD.md persona), each citing
+a specific number reconciled to the finished dashboard (P4-08) and/or EDA notebook (P4-09): (1)
+reseller-channel economics (73.4% of revenue from 12.1% of orders, ~20x AOV gap — $21,286.18 vs
+$1,061.45); (2) product mix (Bikes = 86.2% of gross revenue from 32.8% of units); (3) top
+accounts/cities (Brakes and Gears $882,276.4966; Toronto $4,498,883.7327); (4) geography (US 57.4%
+of revenue, Canada a distant second at $16.4M); (5) the promotion-vs-data-driven reframe directly
+addressing Silvana's stated skepticism — the "On Promotion" reason drove $6,361,828.95 gross
+(3,515 orders, ~5.8% of revenue) yet the real dollar `discount_amount` ($527,507.91) sits entirely
+on the reseller channel and is structurally zero on every online "Promotion"-tagged order, a
+distinction P4-09's EDA first surfaced; (6) adopting the dashboard as the standing monthly
+commercial-review artifact. Outer BDD: `scripts/test_recommendations.py` — RED proven
+(`FileNotFoundError` on the not-yet-existing `docs/recommendations.md`, committed alone) — GREEN
+once the doc landed: the test independently recomputes every grounded figure straight from the
+built marts (not from `bi/README.md`'s prose), parses the doc's six numbered recommendations, and
+confirms each cites at least one number that reconciles within tolerance, plus that recommendation
+#5 both mentions "promotion" and cites the Promotion-impact/discount-by-channel figures. `just
+build` clean-checkout non-regression: PASS=138 (Phase 4 adds no dbt models); re-verified from a
+fully clean state (wiped `.venv`, `target/`, `dbt_packages/`, the DuckDB file; `just setup && just
+build` PASS=138, then the outer test GREEN again). All 7 prior `scripts/validate_*`/`test_*` outer
+tests re-run GREEN, confirming no regression. Inner loop `skipped` per the issue (narrative/business
+writing, no unit-decomposable logic). **Phase 4 is now fully drained (10/10 issues done) — this was
+the last issue in the last phase per the profile's phase-cutting rule.**
+
+## Project status (all SDD-loop phases complete)
+The SDD loop's issue backlog is now **fully drained**: Phase 1 (Foundation), Phase 2 (Dimensions),
+Phase 3 (Fact + reconciliation), and Phase 4 (Serving) are all `done`, ending with P4-10. Root
+`PRD.md`'s Definition of Done items **1–6** (green `dbt build`, exact 2011 reconciliation, source/
+PK/data-quality tests, mart documentation, the Superset dashboard + deliverable-equivalence
+exports, and the Silvana-framed commercial recommendations) are satisfied by what the loop built.
+Item **7** additionally lists `FR-11` (EDA notebook — **done**, P4-09) plus `FR-12` (business-rules
+doc), `FR-13` (conceptual DW diagram PDF), and `FR-14` (slides + demo video + Figma mockup) — these
+three are explicitly tagged **[manual/external]** in the root PRD and `docs/phases/phase-4/prd.md`
+states plainly they are "not cut into this phase's backlog; they are produced by the human directly
+against the root PRD's Definition of Done, outside the issue/BDD/TDD loop." No issue in any phase's
+backlog was ever meant to cover them. **This worker does not declare the whole project done** — that
+determination (whether the human-produced FR-12/13/14 artifacts exist and the submission is
+complete) is an orchestrator/human-level call outside the loop's automated scope.
+
 ## Tactical decisions (reversible; recorded here, not ADRs)
 - **Data = canonical public Microsoft AdventureWorks; DuckDB-only (no Postgres).** The ERD is the stock
   AW 2008 OLTP schema and `$12,646,112.16` is the well-known AW figure, so the challenge data is the
@@ -265,6 +307,12 @@ _none — Phase 2 closed at a clean boundary; files describe the position._
 11. **P4-08 done** — dashboard assembly (`bi/dashboards/adventure_works_sales.yaml`) + FR-7
     dashboard-wide filters + finalized run instructions/metric docs landed. **Phase 4 is now fully
     drained except P4-10** (blocked by P4-08 + P4-09, both done).
+12. **P4-10 done** — `docs/recommendations.md` landed. **Phase 4 is now complete (10/10), and with
+    it the entire SDD-loop issue backlog across all 4 phases.** No further issue to dispatch — next
+    step (outside the loop) is a human/orchestrator review of the root PRD's remaining
+    manual/external deliverables (`FR-12` business-rules doc, `FR-13` conceptual DW diagram PDF,
+    `FR-14` slides/video/mockup, `FR-15` *[Could]* data-project plan PDF), none of which were ever
+    cut into an issue.
 
 ## Open questions
 _None blocking._ The full-data ingestion question is resolved (tactical Parquet form above; the
@@ -276,6 +324,20 @@ value non-vacuously. **P4-07's worker should use `sales_reason_name = 'On Promot
 against real data (3,515 matched orders), no rediscovery needed.
 
 ## Worklog (most recent first)
+- **P4-10 done**: `docs/recommendations.md` — six prioritized commercial recommendations for
+  Adventure Works, framed for Silvana Teixeira, each citing a grounded figure: reseller-channel
+  economics (73.4% revenue / 12.1% orders, ~20x AOV gap), product mix (Bikes 86.2% revenue / 32.8%
+  units), top accounts/cities (Brakes and Gears $882,276.4966; Toronto $4,498,883.7327), geography
+  (US 57.4%, Canada $16.4M), the promotion-vs-data-driven reframe (Promotion reason = $6,361,828.95
+  gross across 3,515 orders, yet the real $527,507.91 discount sits entirely on the reseller
+  channel, zero on online "Promotion"-tagged orders), and adopting the dashboard as the standing
+  review artifact. Outer test `scripts/test_recommendations.py` RED (`docs/recommendations.md`
+  absent) → committed alone → GREEN (independently recomputes every grounded figure from the built
+  marts, parses the doc's 6 numbered recommendations, confirms each cites a reconciling number, and
+  confirms recommendation #5 addresses the promotion skepticism with the right figures). `just
+  build` non-regression PASS=138; re-verified from a fully clean state; all 7 prior outer tests
+  re-run GREEN. Inner loop skipped per issue. **Phase 4 complete (10/10) — last issue in the last
+  phase; the whole SDD-loop backlog is now fully drained.**
 - **P4-08 done**: `bi/dashboards/adventure_works_sales.yaml` assembles all 12 committed charts
   (5 hero KPIs + 7 question a-f charts) onto one dashboard, wires all 10 `FR-7` dashboard-wide
   filters (sales channel + product/card type/sales reason/order date/customer/order

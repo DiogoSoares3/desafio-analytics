@@ -21,7 +21,7 @@
 | P4-07 | Question f + Promotion-impact hero KPI | done | P4-01 |
 | P4-08 | Deliverable-equivalence packaging (dashboard assembly + run instructions) | done | P4-01..P4-07 |
 | P4-09 | EDA notebook | done | — |
-| P4-10 | Commercial recommendations doc | todo | P4-08, P4-09 |
+| P4-10 | Commercial recommendations doc | done | P4-08, P4-09 |
 
 P4-01 registers the Superset↔DuckDB connection and datasets every later BI issue (P4-02–P4-08) depends
 on. P4-02–P4-07 are mutually independent charts once P4-01 lands (each answers one `CHALLENGE.md`
