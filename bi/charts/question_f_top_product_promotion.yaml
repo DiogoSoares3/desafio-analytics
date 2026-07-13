@@ -1,0 +1,34 @@
+slice_name: "Question f: Top Product -- On Promotion"
+viz_type: table
+description: >-
+  CHALLENGE.md question f: which product has the highest number of units purchased for the
+  "Promotion" sales reason? Ranks products by units for sales_reason_name = "On Promotion"
+  (the real dim_sales_reason value; PROGRESS.md's resolved tactical note / P3-04 PR #22).
+  Reconciles to a direct fct_sales -> bridge_order_sales_reason -> dim_sales_reason join -- see
+  scripts/validate_question_f.py (P4-07 outer test).
+params:
+  datasource: c875c822-4cdf-4480-b036-6dd7e4aa7d76__table
+  viz_type: table
+  query_mode: aggregate
+  groupby:
+    - product_name
+  metrics:
+    - units
+  adhoc_filters:
+    - clause: WHERE
+      subject: sales_reason_name
+      operator: "=="
+      operatorId: EQUALS
+      comparator: "On Promotion"
+      expressionType: SIMPLE
+  row_limit: 10
+  order_desc: true
+  timeseries_limit_metric: units
+  table_timestamp_format: smart_date
+  show_cell_bars: true
+  color_pn: true
+query_context: null
+cache_timeout: null
+uuid: eb81e096-8968-4380-9e4c-42344382767b
+version: 1.0.0
+dataset_uuid: c875c822-4cdf-4480-b036-6dd7e4aa7d76

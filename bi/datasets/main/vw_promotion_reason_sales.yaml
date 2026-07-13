@@ -1,0 +1,127 @@
+table_name: vw_promotion_reason_sales
+schema: main
+description: >-
+  Virtual dataset (SQL) joining fct_sales -> sales_order_number -> bridge_order_sales_reason ->
+  dim_sales_reason, plus dim_product for the human-readable product name (Gold, already-tested
+  marts -- no parallel metric layer, NFR-3). The base fact carries no reason FK, so this join
+  does not fan out gross for a single-reason filter (ADR-0003), per the no-fan-out invariant
+  P3-04's singular test proves. Backs question f (top product by units for the "On Promotion"
+  sales reason) and the Promotion-impact hero KPI (FR-8). See ARCHITECTURE.md SS
+  bridge_order_sales_reason and scripts/validate_question_f.py (P4-07 outer test).
+sql: |-
+  select
+      fct_sales.sales_order_number,
+      dim_product.product_name,
+      fct_sales.order_qty,
+      fct_sales.gross_revenue,
+      fct_sales.discount_amount,
+      dim_sales_reason.sales_reason_name,
+      dim_sales_reason.sales_reason_type
+  from fct_sales
+  inner join bridge_order_sales_reason
+      on fct_sales.sales_order_number = bridge_order_sales_reason.sales_order_number
+  inner join dim_sales_reason
+      on bridge_order_sales_reason.sales_reason_key = dim_sales_reason.sales_reason_key
+  inner join dim_product
+      on fct_sales.product_key = dim_product.product_key
+main_dttm_col: null
+default_endpoint: null
+offset: 0
+cache_timeout: null
+params: null
+template_params: null
+filter_select_enabled: true
+fetch_values_predicate: null
+extra: null
+uuid: c875c822-4cdf-4480-b036-6dd7e4aa7d76
+version: 1.0.0
+database_uuid: 834123f4-6949-458f-aa23-1f4a3dc03c37
+columns:
+  - column_name: sales_order_number
+    verbose_name: Sales Order Number
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Degenerate dimension -- business order number (fct_sales).
+  - column_name: product_name
+    verbose_name: Product Name
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Product name (dim_product), for question-f grouping.
+  - column_name: order_qty
+    verbose_name: Order Quantity
+    is_dttm: false
+    is_active: true
+    type: BIGINT
+    groupby: false
+    filterable: true
+    description: Units ordered on the line (fct_sales).
+  - column_name: gross_revenue
+    verbose_name: Gross Revenue
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: true
+    description: Pre-discount/pre-tax/pre-freight line revenue (fct_sales, ADR-0001).
+  - column_name: discount_amount
+    verbose_name: Discount Amount
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: true
+    description: Line discount (fct_sales). Structurally zero for "On Promotion" rows -- see the
+      promotion_impact metric note.
+  - column_name: sales_reason_name
+    verbose_name: Sales Reason Name
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_sales_reason reason name -- filter to "On Promotion" for question f /
+      Promotion-impact (the real reason-row value; the bare string "Promotion" matches no row,
+      corrected in P3-04 PR #22).
+  - column_name: sales_reason_type
+    verbose_name: Sales Reason Type
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_sales_reason reason type ("Promotion" here matches non-vacuously, an
+      equivalent filter to sales_reason_name = "On Promotion").
+metrics:
+  # Question f (CHALLENGE.md): top product by units for the "On Promotion" sales reason.
+  - metric_name: units
+    verbose_name: Units
+    metric_type: null
+    expression: SUM(order_qty)
+    description: >-
+      Units purchased, grouped by product_name and filtered to sales_reason_name = "On
+      Promotion" on the chart (question f). Definition: sum(order_qty) over the
+      fct_sales/bridge_order_sales_reason/dim_sales_reason join, no fan-out (ADR-0003).
+    d3format: ",d"
+    warning_text: null
+  # Hero KPI 5 (FR-8): Promotion-impact -- P4-07 scenario, "the Promotion-impact hero KPI equals
+  # the corresponding direct aggregate over the same join". Uses gross_revenue, not
+  # discount_amount: the EDA notebook (P4-09) found discount_amount sits entirely on the
+  # reseller/store channel while the "On Promotion" reason tag is exclusively on online orders,
+  # so sum(discount_amount) over this join is structurally zero -- sum(gross_revenue) is the
+  # meaningful, non-degenerate "impact" figure (documented in bi/README.md).
+  - metric_name: promotion_impact
+    verbose_name: Promotion-Impact Revenue
+    metric_type: null
+    expression: SUM(gross_revenue)
+    description: >-
+      Total gross revenue attributable to orders tagged with the "On Promotion" sales reason
+      (sum(gross_revenue) over the fct_sales/bridge_order_sales_reason/dim_sales_reason join,
+      filtered to sales_reason_name = "On Promotion", no fan-out per ADR-0003). Hero KPI (FR-8).
+    d3format: "$,.2f"
+    warning_text: null
