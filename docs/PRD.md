@@ -72,9 +72,8 @@ filter and verify, and has been burned by past "data-driven" promises.
 
 ## Scope & prioritization (MoSCoW)
 Every capability sits in exactly one bucket. **Won't (this version)** *is* the out-of-scope list.
-> **Built vs manual:** dbt builds/tests the model, KPIs, and Superset dashboard. Items tagged
-> **[manual/external]** are produced by the Analytics Engineer outside the codebase (not built or tested
-> by dbt) — the EDA notebook, business-rules doc, conceptual DW diagram, mockup, slides, video.
+> dbt builds/tests the model, KPIs, and Superset dashboard. Items tagged **[manual/external]**
+> are produced by the Analytics Engineer outside the codebase.
 
 | Priority | Capability | Requirements |
 |---|---|---|
@@ -85,10 +84,10 @@ Every capability sits in exactly one bucket. **Won't (this version)** *is* the o
 | **Must** | Superset dashboard answering business questions a–f with all required filters | FR-6, FR-7, NFR-3 |
 | **Must** | Core commercial KPIs (heroes: Total Revenue, AOV, Promotion-impact) | FR-8 |
 | **Must** | Superset deliverable-equivalence exports (dashboard YAML/JSON bundle + run instructions + documented metrics), per ADR-0002 | FR-9 |
-| **Must** | Actionable commercial recommendations for AW, framed for Silvana **[manual/external]** | FR-10 |
-| **Should** | Exploratory Data Analysis notebook (code + charts + insight commentary) **[manual/external]** | FR-11 |
-| **Should** | Business-rules documentation **[manual/external]** | FR-12 |
-| **Should** | Conceptual DW diagram (PDF) with source→mart lineage **[manual/external]** | FR-13 |
+| **Must** | Actionable commercial recommendations for AW, framed for Silvana | FR-10 |
+| **Should** | Exploratory Data Analysis notebook (code + charts + insight commentary) | FR-11 |
+| **Should** | Business-rules documentation | FR-12 |
+| **Should** | Conceptual DW diagram (PDF) with source→mart lineage | FR-13 |
 | **Should** | Presentation slides + demo video + Figma mockup **[manual/external]** | FR-14 |
 | **Could** | Data-project plan PDF (objectives, stakeholders, risks/ROI — addresses Silvana's skepticism) **[manual/external]** | FR-15 |
 | **Won't (this version)** | Integration of other source systems (SAP / Salesforce / Google Analytics / WordPress) — conceptual mention only | — |
@@ -130,10 +129,10 @@ Every capability sits in exactly one bucket. **Won't (this version)** *is* the o
   **YAML/JSON bundle** (analogue of `.pbix` / AI-BI JSON), **run instructions/link**, and **documented
   metric definitions** (analogue of documented DAX).
 - `FR-10` — Produce **actionable commercial recommendations** for AW derived from the model/EDA, framed
-  for Silvana (grading criterion 6). *[manual/external]*
-- `FR-11` — Produce an **EDA notebook** (code, charts, per-insight commentary). *[manual/external]*
-- `FR-12` — Produce **business-rules documentation**. *[manual/external]*
-- `FR-13` — Produce a **conceptual DW diagram (PDF)** noting source tables per dim/fact. *[manual/external]*
+  for Silvana (grading criterion 6).
+- `FR-11` — Produce an **EDA notebook** (code, charts, per-insight commentary).
+- `FR-12` — Produce **business-rules documentation**.
+- `FR-13` — Produce a **conceptual DW diagram (PDF)** noting source tables per dim/fact.
 - `FR-14` — Produce **slides + demo video (≤10 min) + Figma mockup**. *[manual/external]*
 - `FR-15` — *(Could)* Produce a **data-project plan PDF** (objectives, stakeholders, risks/contingencies,
   ROI narrative addressing commercial skepticism). *[manual/external]*
