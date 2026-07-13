@@ -160,14 +160,15 @@ def main() -> int:
             failures.append(f"re-slice by {label}")
             continue
 
-        summed_orders_qty_value = (
-            sum(r[1] for r in rows),
+        # row shape: (group_column, number_of_orders, units_purchased, total_transaction_value)
+        summed_qty_value = (
             sum(r[2] for r in rows),
+            sum(r[3] for r in rows),
         )
         # order count is not additive across a groupby (an order can span >1 product/status/etc
         # in different rows only for reason-fanout, not here); qty and value ARE additive since
         # the detail dataset carries no reason join (one row per fct_sales line, ADR-0003).
-        qty_value_match = tuple(round(float(v), 2) for v in summed_orders_qty_value) == (
+        qty_value_match = tuple(round(float(v), 2) for v in summed_qty_value) == (
             round(float(unfiltered_total[1]), 2),
             round(float(unfiltered_total[2]), 2),
         )
