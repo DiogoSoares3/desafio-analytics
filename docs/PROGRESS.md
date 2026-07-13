@@ -8,11 +8,11 @@
 ## SDD-CURSOR
 - **Phase:** 4 (Serving)
 - **Doing:** none
-- **Next:** P4-02, P4-05 (remaining business questions, any order, unblocked by P4-01;
-  **P4-03, P4-04, P4-06, P4-07 now done**); P4-08 waits on P4-02..P4-07; P4-10 waits on P4-08 +
-  P4-09 (**P4-09 done**).
-- **Stop-reason:** none — P4-01, P4-03, P4-04, P4-06, P4-07, and P4-09 all landed green; P4-02,
-  P4-05 are the next unblocked slices.
+- **Next:** P4-05 (last remaining business question, unblocked by P4-01; **P4-02, P4-03, P4-04,
+  P4-06, P4-07 now done**); P4-08 waits on P4-02..P4-07; P4-10 waits on P4-08 + P4-09
+  (**P4-09 done**).
+- **Stop-reason:** none — P4-01, P4-02, P4-03, P4-04, P4-06, P4-07, and P4-09 all landed green;
+  P4-05 is the last unblocked slice before P4-08.
 
 ## Current status
 **Phase 3 (Fact + reconciliation) COMPLETE — 5/5 issues done** (P3-01 canonical AdventureWorks →
@@ -64,6 +64,29 @@ documents the new dataset/chart, run steps, and an extended metric-definitions t
 `skipped` per the issue. `just build` non-regression PASS=138 (Phase 4 adds no dbt models); `just
 check` (lint+typecheck+build) green; re-verified from a fully clean state (wiped `.venv`, `target/`,
 `dbt_packages/`, the DuckDB file, re-ran `just setup && just build` then the outer test).
+
+**P4-02 done**: CHALLENGE.md question a (orders/quantity/value sliced and filtered by product,
+card type, sales reason, sales date, customer, status, city, state, country, sales channel) —
+two virtual Superset datasets over `fct_sales`: `bi/datasets/main/question_a_sales_detail.yaml`
+(joins the six single-valued dims — product, credit card, order status, geography ship-to, date,
+customer — every column `filterable: true`, covering `FR-7`'s filter set) and
+`bi/datasets/main/question_a_sales_by_reason.yaml` (joins through `bridge_order_sales_reason` to
+`dim_sales_reason`, kept separate so a multi-reason order does not fan out the other eight dims'
+totals — same no-fan-out invariant P3-04's singular test proves structurally). Two table charts
+(`question_a_orders_qty_value.yaml`, `question_a_orders_qty_value_by_reason.yaml`) expose
+`number_of_orders`/`units_purchased`/`total_transaction_value` (same formulas as the P4-01 hero
+KPIs) grouped by product / sales reason respectively, re-groupable by any other declared column.
+Outer BDD: `scripts/validate_question_a.py` — RED (`FileNotFoundError`, bi/ question-a assets
+absent) committed alone; GREEN once the datasets/charts landed — a filtered aggregate (product +
+sales channel) matches a direct `fct_sales` join exactly, and all nine required dimension slices
+reconcile their quantity/value totals back to the unfiltered grand total with no query errors.
+While making it green, found and fixed a column-index bug in the test's own re-slice check
+(summed the wrong metric columns) — a strictly-stronger correction, folded into the implementation
+commit since it was caught mid-build, not a separate pre-existing regression. Re-verified from a
+fully clean checkout (wiped `target/`, `dbt_packages/`, the DuckDB file; `just setup && just build
+&& uv run python scripts/validate_question_a.py`). `just build` non-regression: PASS=138 (Phase 4
+adds no dbt models). Inner loop `skipped` per the issue. Independent of P4-03..P4-07 (each is its
+own dataset/chart pair over the same tested marts).
 
 **P4-09 done** (PR #20): `notebooks/eda.ipynb` — an EDA notebook reading `data/adventureworks.duckdb`'s
 built marts directly via a DuckDB connection (no separate extract, per `CLAUDE.md`'s "Python is a thin
@@ -173,16 +196,16 @@ _none — Phase 2 closed at a clean boundary; files describe the position._
 2. **Phase 4 (Serving) opened and confirmed** — `docs/phases/phase-4/prd.md` (realizes
    FR-6/7/8/9/10/11, NFR-3) + `docs/phases/phase-4/backlog.md` (10 issues).
 3. **P4-01 done** — Superset scaffold + hero KPI tiles landed; datasets/connection ready for
-   P4-02..P4-08 to build on.
-4. **P4-03 done** — question-b top-products-by-AOV chart/dataset landed on top of P4-01's scaffold.
-5. **P4-04 done** — top-10-customers (question c) chart landed.
-6. **P4-06 done** — question-e time series (orders/qty/value by month & year) chart landed.
-7. **P4-07 done** — question f + Promotion-Impact hero KPI landed, using the corrected
-   `sales_reason_name = 'On Promotion'` filter.
-8. **P4-09 done** — EDA notebook landed (independent of the Superset track). Flagged (and since
+   P4-02..P4-08 to build on. P4-02..P4-07 (business questions a–f) can now proceed in any order.
+4. **P4-09 done** — EDA notebook landed (independent of the Superset track). Flagged (and since
    fixed on `develop` via PR #22) a P3-04 literal-string filter nuance
    (`sales_reason_name = 'Promotion'` matched no row; the real value is `'On Promotion'`).
-   Remaining: P4-02, P4-05 → P4-08 → P4-10.
+5. **P4-02 done** — question a (orders/qty/value sliced + filtered) landed.
+6. **P4-03 done** — question-b top-products-by-AOV chart/dataset landed.
+7. **P4-04 done** — top-10-customers (question c) chart landed.
+8. **P4-06 done** — question-e time series (orders/qty/value by month & year) chart landed.
+9. **P4-07 done** — question f + Promotion-Impact hero KPI landed. Remaining: P4-05 → P4-08 →
+   P4-10.
 
 ## Open questions
 _None blocking._ The full-data ingestion question is resolved (tactical Parquet form above; the
@@ -224,6 +247,13 @@ against real data (3,515 matched orders), no rediscovery needed.
   `fct_sales`/`dim_customer` aggregate). `just build` non-regression PASS=138; `just check` green;
   re-verified from a fully clean state (wiped `.venv`, `dbt_packages`, the DuckDB file, re-ran
   `uv sync && dbt deps && just build`). Inner loop skipped per issue.
+- **P4-02 done**: question a (`bi/datasets/main/question_a_sales_detail.yaml` +
+  `question_a_sales_by_reason.yaml`, `bi/charts/question_a_orders_qty_value*.yaml`) — orders/
+  qty/value over `fct_sales` sliced by product, card type, sales reason, sales date, customer,
+  status, city, state, country, sales channel. Outer test `scripts/validate_question_a.py` RED
+  (bi/ question-a assets absent) → committed alone → GREEN (filtered reconciliation + all nine
+  dimension slices reconcile, no fan-out). `just build` non-regression PASS=138. Inner loop
+  skipped per issue.
 - **P4-03 done**: `bi/datasets/main/question_b_product_aov.yaml` (fct_sales joined to dim_product,
   dim_date, dim_geography ship-to) + `bi/charts/question_b_top_products_by_aov.yaml` (table, ranked
   by `average_order_value`, same formula as the P4-01 hero KPI). Outer test
