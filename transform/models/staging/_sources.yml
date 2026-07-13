@@ -6,8 +6,9 @@ sources:
       Canonical Microsoft AdventureWorks OLTP tables (Bronze). Offline, each table reads its
       committed `data/adventure_works/<table>.parquet` (the source-of-record produced by
       `just load` / `scripts/load_adventure_works.py`) via dbt-duckdb `external_location`
-      (`read_parquet`). The full order set is present here; only online sales are carried into
-      the marts (see PRD / ADR-0002). Paths are relative to the repo root (dbt is invoked there).
+      (`read_parquet`). The full order set is present here; **all sales channels** (online +
+      reseller) are carried into the marts (ADR-0010). Paths are relative to the repo root (dbt
+      is invoked there).
     schema: adventure_works
     meta:
       external_location: "read_parquet('data/adventure_works/{name}.parquet')"
@@ -81,7 +82,9 @@ sources:
             data_tests: [not_null]
 
       - name: customer
-        description: Customers; online customers link to a person (storeid null).
+        description: >
+          Customers; individual/online customers link to a person (storeid null), store/reseller
+          customers link to a store (storeid not null, ADR-0010).
         columns:
           - name: customerid
             description: Customer natural key.
@@ -144,6 +147,18 @@ sources:
             data_tests: [unique, not_null]
           - name: cardtype
             description: Card type (e.g. Vista, SuperiorCard).
+            data_tests: [not_null]
+
+      - name: store
+        description: >
+          Reseller stores; `businessentityid` is the natural key `customer.storeid` points at
+          (ADR-0010, all-channel scope). Feeds the store name into dim_customer.
+        columns:
+          - name: businessentityid
+            description: Store natural key.
+            data_tests: [unique, not_null]
+          - name: name
+            description: Store name.
             data_tests: [not_null]
 
       - name: specialoffer

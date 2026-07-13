@@ -54,8 +54,10 @@ models:
 
   - name: dim_customer
     description: >
-      Conformed customer dimension (Gold) — **individuals only** (online customers: `person`-backed,
-      `storeid` is null; resellers excluded, online-only scope). SCD Type 1 (ADR-0008).
+      Conformed customer dimension (Gold) — **all sales channels** (ADR-0010): individual
+      (online, `person`-backed) and store (reseller, `storeid` not null) customers, one row per
+      source customer, with a `customer_type` attribute distinguishing the two. SCD Type 1
+      (ADR-0008).
     columns:
       - name: customer_key
         description: Hashed surrogate primary key (dbt_utils.generate_surrogate_key over customer_id; ADR-0007).
@@ -66,8 +68,19 @@ models:
         description: Natural key from the source customer table.
         data_tests:
           - not_null
+      - name: customer_type
+        description: >
+          Channel the customer belongs to (ADR-0010): "individual" for person-backed online
+          customers, "store" for reseller/store customers.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["individual", "store"]
       - name: full_name
-        description: Customer's full name (person first_name + last_name).
+        description: >
+          Customer's display name — person first_name + last_name for individuals, store name
+          for stores (ADR-0010).
         data_tests:
           - not_null
 
@@ -113,8 +126,9 @@ models:
 
   - name: dim_credit_card
     description: >
-      Conformed credit card dimension (Gold), one row per credit card, with its card type.
-      SCD Type 1 (ADR-0008).
+      Conformed credit card dimension (Gold), one row per credit card, with its card type, plus
+      an explicit **"N/A" member** (ADR-0010) for reseller order lines that carry no
+      `CreditCardID`, so the fact's `credit_card_key` FK stays not_null. SCD Type 1 (ADR-0008).
     columns:
       - name: credit_card_key
         description: Hashed surrogate primary key (dbt_utils.generate_surrogate_key over credit_card_id; ADR-0007).
@@ -122,16 +136,16 @@ models:
           - unique
           - not_null
       - name: credit_card_id
-        description: Natural key from the source credit card table.
-        data_tests:
-          - not_null
+        description: >
+          Natural key from the source credit card table. Null for the synthetic "N/A" member
+          (ADR-0010).
       - name: card_type
-        description: Card type (e.g. Vista, SuperiorCard).
+        description: Card type (e.g. Vista, SuperiorCard), or "N/A" for the card-less member.
         data_tests:
           - not_null
           - accepted_values:
               arguments:
-                values: ["Vista", "SuperiorCard", "Distinguish", "ColonialVoice"]
+                values: ["Vista", "SuperiorCard", "Distinguish", "ColonialVoice", "N/A"]
 
   - name: dim_sales_reason
     description: >

@@ -177,6 +177,14 @@ RAW_COLUMNS: dict[str, list[str]] = {
     ],
     "countryregion": ["countryregioncode", "name", "modifieddate"],
     "creditcard": ["creditcardid", "cardtype", "cardnumber", "expmonth", "expyear", "modifieddate"],
+    "store": [
+        "businessentityid",
+        "name",
+        "salespersonid",
+        "demographics",
+        "rowguid",
+        "modifieddate",
+    ],
     "specialoffer": [
         "specialofferid",
         "description",
@@ -208,6 +216,7 @@ CSV_FILENAME: dict[str, str] = {
     "countryregion": "CountryRegion.csv",
     "creditcard": "CreditCard.csv",
     "specialoffer": "SpecialOffer.csv",
+    "store": "Store.csv",
 }
 
 # Projection from the raw all-VARCHAR staging relation to the typed, in-scope Parquet columns.
@@ -305,6 +314,10 @@ PROJECTIONS: dict[str, str] = {
         type,
         category
     """,
+    "store": """
+        cast(businessentityid as integer) as businessentityid,
+        name
+    """,
 }
 
 
@@ -338,6 +351,12 @@ def stage_raw(con: duckdb.DuckDBPyConnection, table: str, csv_path: Path) -> Non
         )
         con.executemany(f"insert into raw_{table} values (?, ?, ?, ?)", rows)
         return
+    if table == "store":
+        # Store also uses "+|" / "&|\n" terminators (Demographics is XML like Person).
+        rows = _parse_store(csv_path)
+        con.execute(f"create table raw_{table} (businessentityid varchar, name varchar)")
+        con.executemany(f"insert into raw_{table} values (?, ?)", rows)
+        return
     con.execute(
         f"create table raw_{table} as "
         f"select * from read_csv(?, delim='{TAB}', header=false, quote='', columns={columns})",
@@ -354,6 +373,18 @@ def _parse_person(csv_path: Path) -> list[tuple[str, str, str, str]]:
             continue
         fields = record.split("+|")
         rows.append((fields[0], fields[4], fields[6], fields[1]))
+    return rows
+
+
+def _parse_store(csv_path: Path) -> list[tuple[str, str]]:
+    """Parse the ``+|`` / ``&|`` delimited Store.csv into (businessentityid, name)."""
+    text = csv_path.read_text(encoding="utf-8", errors="replace")
+    rows: list[tuple[str, str]] = []
+    for record in text.split("&|\n"):
+        if not record:
+            continue
+        fields = record.split("+|")
+        rows.append((fields[0], fields[1]))
     return rows
 
 
