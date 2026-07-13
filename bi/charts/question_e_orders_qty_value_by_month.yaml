@@ -1,0 +1,26 @@
+slice_name: "Question e: Orders, Quantity & Value by Month/Year"
+viz_type: echarts_timeseries_line
+description: >-
+  CHALLENGE.md question e: "number of orders, quantity purchased, and total transaction value by
+  month and year." Time-series chart over question_e_sales_by_month (fct_sales x dim_date),
+  grouped by year_month. Reconciles to a direct fct_sales x dim_date aggregate -- see
+  scripts/validate_question_e_timeseries.py (P4-06 outer test). Series has no gaps: dim_date is a
+  gap-free day-grain date_spine over exactly the order-date range (ADR-0006).
+params:
+  datasource: fb57ab18-2e45-4926-ac43-25d35982dad0__table
+  viz_type: echarts_timeseries_line
+  x_axis: year_month
+  x_axis_sort_asc: true
+  metrics:
+    - monthly_order_count
+    - monthly_quantity
+    - monthly_value
+  groupby: []
+  adhoc_filters: []
+  row_limit: 10000
+  order_desc: false
+query_context: null
+cache_timeout: null
+uuid: 119f9fbe-30f0-49fd-8444-7370f9160069
+version: 1.0.0
+dataset_uuid: fb57ab18-2e45-4926-ac43-25d35982dad0

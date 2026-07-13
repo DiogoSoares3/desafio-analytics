@@ -8,10 +8,10 @@
 ## SDD-CURSOR
 - **Phase:** 4 (Serving)
 - **Doing:** none
-- **Next:** P4-02, P4-03, P4-05, P4-06, P4-07 (remaining business questions, any order, unblocked by
+- **Next:** P4-02, P4-03, P4-05, P4-07 (remaining business questions, any order, unblocked by
   P4-01); P4-08 waits on P4-02..P4-07; P4-10 waits on P4-08 + P4-09 (**P4-09 done**).
-- **Stop-reason:** none — P4-01, P4-04, and P4-09 all landed green; P4-02, P4-03, P4-05, P4-06, P4-07
-  are the next unblocked slices.
+- **Stop-reason:** none — P4-01, P4-04, P4-06, and P4-09 all landed green; P4-02, P4-03, P4-05,
+  P4-07 are the next unblocked slices.
 
 ## Current status
 **Phase 3 (Fact + reconciliation) COMPLETE — 5/5 issues done** (P3-01 canonical AdventureWorks →
@@ -78,6 +78,23 @@ surfacing to P4-10's recommendations. Inner loop `skipped` per the issue (explor
 notebook, no unit-decomposable logic). **Independent of the Superset track — does not unblock/depend on
 P4-01..P4-08.**
 
+**P4-06 done**: question-e time series (CHALLENGE.md "number of orders, quantity purchased, and
+total transaction value by month and year") — a virtual (SQL) Superset dataset
+(`bi/datasets/main/question_e_sales_by_month.yaml`) joining `fct_sales` to `dim_date` on
+`date_key`, three declared metrics (`monthly_order_count`, `monthly_quantity`, `monthly_value`,
+same formulas as `ARCHITECTURE.md` §fct_sales, no parallel metric layer per NFR-3), and one
+`echarts_timeseries_line` chart grouped by `year_month`
+(`bi/charts/question_e_orders_qty_value_by_month.yaml`). Outer BDD:
+`scripts/validate_question_e_timeseries.py` computes the same year-month series directly and
+independently, asserts an exact match per point, and asserts the series covers dim_date's full
+gap-free range (ADR-0006) with no skipped calendar month. RED proven (`FileNotFoundError` on the
+not-yet-existing dataset YAML, committed alone); GREEN once the dataset + chart landed — 38
+year-month points (2011-05..2014-06), every point reconciles exactly, zero gaps. `bi/README.md`
+updated (layout, run instructions, question-e metric-definitions table). Inner loop `skipped` per
+the issue (declarative chart/metric config over already-tested marts). `just build` /
+`just check` non-regression PASS=138 (Phase 4 adds no dbt models); re-verified from a fully clean
+detached-HEAD checkout.
+
 ## Tactical decisions (reversible; recorded here, not ADRs)
 - **Data = canonical public Microsoft AdventureWorks; DuckDB-only (no Postgres).** The ERD is the stock
   AW 2008 OLTP schema and `$12,646,112.16` is the well-known AW figure, so the challenge data is the
@@ -118,8 +135,9 @@ _none — Phase 2 closed at a clean boundary; files describe the position._
    literal-string filter nuance (`sales_reason_name = 'Promotion'` matches no row; use
    `sales_reason_type = 'Promotion'` / `sales_reason_name = 'On Promotion'`) relevant to **P4-07**'s
    scenario before that issue is picked up.
-5. **P4-04 done** — top-10-customers (question c) chart landed. Remaining: P4-02, P4-03, P4-05,
-   P4-06, P4-07 → P4-08 → P4-10.
+5. **P4-04 done** — top-10-customers (question c) chart landed.
+6. **P4-06 done** — question-e time series (orders/qty/value by month & year) chart landed.
+   Remaining: P4-02, P4-03, P4-05, P4-07 → P4-08 → P4-10.
 
 ## Open questions
 _None blocking._ The full-data ingestion question is resolved (tactical Parquet form above; the
@@ -131,6 +149,13 @@ value non-vacuously. **P4-07's worker should use `sales_reason_name = 'On Promot
 against real data (3,515 matched orders), no rediscovery needed.
 
 ## Worklog (most recent first)
+- **P4-06 done**: `bi/datasets/main/question_e_sales_by_month.yaml` (virtual SQL dataset,
+  fct_sales x dim_date) + `bi/charts/question_e_orders_qty_value_by_month.yaml`
+  (`echarts_timeseries_line`, grouped by year_month) answering question e (orders/qty/value by
+  month & year). Outer test `scripts/validate_question_e_timeseries.py` RED (dataset YAML absent)
+  → committed alone → GREEN (38 year-month points, 2011-05..2014-06, exact reconciliation, no
+  gaps per ADR-0006). `just build`/`just check` non-regression PASS=138; re-verified from a clean
+  detached-HEAD checkout. Inner loop skipped per issue.
 - **P4-04 done**: `bi/datasets/main/question_c_top10_customers.yaml` (virtual dataset joining
   `fct_sales` to `dim_customer` and the six other required-filter dims, with a scalar per-order
   sales-reason subquery over `bridge_order_sales_reason` — no join fan-out) + a `table` chart

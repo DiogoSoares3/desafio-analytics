@@ -1,0 +1,121 @@
+table_name: question_e_sales_by_month
+schema: main
+description: >-
+  Virtual dataset (SQL) for CHALLENGE.md question e: "number of orders, quantity purchased, and
+  total transaction value by month and year." Joins fct_sales to dim_date on date_key -- no
+  parallel metric layer (NFR-3), same tested marts dbt builds. dim_date is a gap-free day-grain
+  date_spine over exactly [min(order_date), max(order_date)] (ADR-0006), so grouping by
+  year_month yields a series with no gaps. See ARCHITECTURE.md SS fct_sales / SS dim_date and
+  scripts/validate_question_e_timeseries.py (P4-06 outer test).
+main_dttm_col: null
+default_endpoint: null
+offset: 0
+cache_timeout: null
+sql: >-
+  select
+      d.year_month,
+      d.year,
+      d.month_number,
+      d.month_name,
+      f.sales_order_number,
+      f.order_qty,
+      f.gross_revenue
+  from main.fct_sales as f
+  join main.dim_date as d on f.date_key = d.date_key
+params: null
+template_params: null
+filter_select_enabled: true
+fetch_values_predicate: null
+extra: null
+uuid: fb57ab18-2e45-4926-ac43-25d35982dad0
+version: 1.0.0
+database_uuid: 834123f4-6949-458f-aa23-1f4a3dc03c37
+columns:
+  - column_name: year_month
+    verbose_name: Year-Month
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Calendar year-month (YYYY-MM), from dim_date (ADR-0006 gap-free date_spine).
+  - column_name: year
+    verbose_name: Year
+    is_dttm: false
+    is_active: true
+    type: BIGINT
+    groupby: true
+    filterable: true
+    description: Calendar year, from dim_date.
+  - column_name: month_number
+    verbose_name: Month Number
+    is_dttm: false
+    is_active: true
+    type: BIGINT
+    groupby: true
+    filterable: true
+    description: Calendar month number (1-12), from dim_date.
+  - column_name: month_name
+    verbose_name: Month Name
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Calendar month name, from dim_date.
+  - column_name: sales_order_number
+    verbose_name: Sales Order Number
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: false
+    filterable: true
+    description: Degenerate dimension -- business order number, from fct_sales.
+  - column_name: order_qty
+    verbose_name: Order Quantity
+    is_dttm: false
+    is_active: true
+    type: BIGINT
+    groupby: false
+    filterable: true
+    description: Units ordered on the line, from fct_sales.
+  - column_name: gross_revenue
+    verbose_name: Gross Revenue
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: true
+    description: Pre-discount/pre-tax/pre-freight line revenue (ADR-0001), from fct_sales.
+metrics:
+  # Question e (CHALLENGE.md) -- "number of orders ... by month and year".
+  - metric_name: monthly_order_count
+    verbose_name: Number of Orders
+    metric_type: null
+    expression: COUNT(DISTINCT sales_order_number)
+    description: >-
+      Distinct order count within a year-month, across all sales channels. Definition:
+      count(distinct sales_order_number) over the fct_sales x dim_date join, grouped by
+      year_month.
+    d3format: ",d"
+    warning_text: null
+  # Question e (CHALLENGE.md) -- "quantity purchased ... by month and year".
+  - metric_name: monthly_quantity
+    verbose_name: Quantity Purchased
+    metric_type: null
+    expression: SUM(order_qty)
+    description: >-
+      Total units ordered within a year-month, across all sales channels. Definition:
+      sum(order_qty) over the fct_sales x dim_date join, grouped by year_month.
+    d3format: ",d"
+    warning_text: null
+  # Question e (CHALLENGE.md) -- "total transaction value ... by month and year".
+  - metric_name: monthly_value
+    verbose_name: Total Transaction Value
+    metric_type: null
+    expression: SUM(gross_revenue)
+    description: >-
+      Total gross revenue within a year-month, across all sales channels (ADR-0001). Definition:
+      sum(gross_revenue) over the fct_sales x dim_date join, grouped by year_month.
+    d3format: "$,.2f"
+    warning_text: null
