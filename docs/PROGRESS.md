@@ -8,10 +8,10 @@
 ## SDD-CURSOR
 - **Phase:** 4 (Serving)
 - **Doing:** none
-- **Next:** P4-02..P4-07 (business questions a–f, any order, unblocked by P4-01); P4-08 waits on
-  P4-02..P4-07; P4-10 waits on P4-08 + P4-09 (**P4-09 now done**).
-- **Stop-reason:** none — P4-01 and P4-09 both landed green (independent tracks); P4-02..P4-07 are the
-  next unblocked slices.
+- **Next:** P4-02, P4-03, P4-05, P4-06, P4-07 (remaining business questions, any order, unblocked by
+  P4-01); P4-08 waits on P4-02..P4-07; P4-10 waits on P4-08 + P4-09 (**P4-09 done**).
+- **Stop-reason:** none — P4-01, P4-04, and P4-09 all landed green; P4-02, P4-03, P4-05, P4-06, P4-07
+  are the next unblocked slices.
 
 ## Current status
 **Phase 3 (Fact + reconciliation) COMPLETE — 5/5 issues done** (P3-01 canonical AdventureWorks →
@@ -117,7 +117,9 @@ _none — Phase 2 closed at a clean boundary; files describe the position._
 4. **P4-09 done** — EDA notebook landed (independent of the Superset track). Flags a P3-04
    literal-string filter nuance (`sales_reason_name = 'Promotion'` matches no row; use
    `sales_reason_type = 'Promotion'` / `sales_reason_name = 'On Promotion'`) relevant to **P4-07**'s
-   scenario before that issue is picked up. Remaining: P4-02..P4-07 → P4-08 → P4-10.
+   scenario before that issue is picked up.
+5. **P4-04 done** — top-10-customers (question c) chart landed. Remaining: P4-02, P4-03, P4-05,
+   P4-06, P4-07 → P4-08 → P4-10.
 
 ## Open questions
 _None blocking._ The full-data ingestion question is resolved (tactical Parquet form above; the
@@ -129,6 +131,20 @@ value non-vacuously. **P4-07's worker should use `sales_reason_name = 'On Promot
 against real data (3,515 matched orders), no rediscovery needed.
 
 ## Worklog (most recent first)
+- **P4-04 done**: `bi/datasets/main/question_c_top10_customers.yaml` (virtual dataset joining
+  `fct_sales` to `dim_customer` and the six other required-filter dims, with a scalar per-order
+  sales-reason subquery over `bridge_order_sales_reason` — no join fan-out) + a `table` chart
+  (`bi/charts/question_c_top10_customers.yaml`) ranking customers by `total_transaction_value`
+  (`row_limit: 10`, `order_desc: true`). **Documented metric choice**: total transaction value =
+  **gross revenue** (`SUM(gross_revenue)`), matching the P4-01 hero KPI "Total Sales Revenue" and
+  the régua's headline gross figure — no parallel net-revenue ranking introduced (documented in
+  `bi/README.md`'s new "business questions" metric table and in the dataset YAML's metric
+  description). Outer test `scripts/validate_top10_customers.py` RED (`bi/datasets/main/
+  question_c_top10_customers.yaml` absent) → committed alone → GREEN once the dataset/chart landed
+  (top customer "Brakes and Gears" = $882,276.4966, exact match against a direct
+  `fct_sales`/`dim_customer` aggregate). `just build` non-regression PASS=138; `just check` green;
+  re-verified from a fully clean state (wiped `.venv`, `dbt_packages`, the DuckDB file, re-ran
+  `uv sync && dbt deps && just build`). Inner loop skipped per issue.
 - **P4-09 done** (PR #20): `notebooks/eda.ipynb` — chart + commentary for product mix, channel
   distribution (`is_online`), geography distribution, Promotion/discount impact, reading the built
   marts directly via DuckDB. Outer test `scripts/check_eda_notebook.py` (`just eda`) RED (notebook
