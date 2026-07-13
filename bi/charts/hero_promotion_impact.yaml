@@ -1,0 +1,30 @@
+slice_name: "Hero KPI: Promotion-Impact Revenue"
+viz_type: big_number_total
+description: >-
+  Hero KPI 5 (FR-8): total gross revenue attributable to orders tagged with the "On Promotion"
+  sales reason -- placed alongside the P4-01 hero tiles (Revenue, Orders, Units, AOV).
+  Reconciles to sum(gross_revenue) over the fct_sales -> bridge_order_sales_reason ->
+  dim_sales_reason join, filtered to sales_reason_name = "On Promotion" -- see
+  vw_promotion_reason_sales.yaml metric `promotion_impact` and scripts/validate_question_f.py
+  (P4-07 outer test). Uses gross_revenue rather than discount_amount because the EDA notebook
+  (P4-09) found discount_amount sits entirely on the reseller/store channel, never on the
+  online-only "On Promotion" orders -- sum(discount_amount) over this join is structurally zero.
+params:
+  datasource: c875c822-4cdf-4480-b036-6dd7e4aa7d76__table
+  viz_type: big_number_total
+  metric: promotion_impact
+  adhoc_filters:
+    - clause: WHERE
+      subject: sales_reason_name
+      operator: "=="
+      operatorId: EQUALS
+      comparator: "On Promotion"
+      expressionType: SIMPLE
+  header_font_size: 0.4
+  subheader_font_size: 0.15
+  y_axis_format: "$,.2f"
+query_context: null
+cache_timeout: null
+uuid: 85610491-2e2a-4820-ae5e-5e7536dab435
+version: 1.0.0
+dataset_uuid: c875c822-4cdf-4480-b036-6dd7e4aa7d76
