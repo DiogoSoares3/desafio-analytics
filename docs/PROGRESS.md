@@ -201,7 +201,7 @@ plus Product, Card Type, Sales Reason, Order Date, Customer, Order Status, City,
 Country — nine of the ten target `question_a_sales_detail` (the P4-02 dataset carrying the full
 required-filter column set), Sales Reason targets `question_a_sales_by_reason` (kept off the
 detail dataset to avoid fanning out the other dims via the bridge join, `ADR-0003`). Outer BDD:
-`scripts/validate_dashboard_bundle.py` — RED proven (`FileNotFoundError` on the not-yet-existing
+`scripts/test_dashboard_bundle.py` — RED proven (`FileNotFoundError` on the not-yet-existing
 `bi/dashboards/adventure_works_sales.yaml`, committed alone); GREEN once the dashboard + updated
 `bi/README.md` landed: all 12 committed charts are referenced in the dashboard's `position` tree,
 all 10 `FR-7` filters target a real filterable column on a real committed dataset, and all 11
@@ -281,7 +281,7 @@ against real data (3,515 matched orders), no rediscovery needed.
   filters (sales channel + product/card type/sales reason/order date/customer/order
   status/city/state/country) against `question_a_sales_detail`/`question_a_sales_by_reason`, and
   updates `bi/README.md` with the dashboard section + run instructions. Outer test
-  `scripts/validate_dashboard_bundle.py` RED (dashboard YAML absent) → committed alone → GREEN
+  `scripts/test_dashboard_bundle.py` RED (dashboard YAML absent) → committed alone → GREEN
   (all charts referenced, all filters wired to real filterable columns, all 11 metrics
   documented). `just build` non-regression PASS=138, re-verified from a fully clean detached-HEAD
   worktree; all 7 prior outer tests re-run GREEN (no regression). Inner loop skipped per issue.

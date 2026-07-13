@@ -50,15 +50,15 @@ separate to avoid fanning out the other dims via the bridge join, `ADR-0003`). N
 apply dashboard-wide by default (Superset cross-filter scoping over `ROOT_ID`), so narrowing e.g.
 sales channel = online reshapes every hero KPI and every question chart at once.
 
-`scripts/validate_dashboard_bundle.py` is the outer BDD test for the dashboard bundle (`P4-08`):
+`scripts/test_dashboard_bundle.py` is the outer BDD test for the dashboard bundle (`P4-08`):
 it reads the committed YAML directly (no live Superset needed, same pattern as the other
-`validate_*` scripts) and asserts (1) every chart currently under `bi/charts/*.yaml` is
+`validate_*`/`test_*` scripts) and asserts (1) every chart currently under `bi/charts/*.yaml` is
 referenced in the dashboard's `position` tree, (2) every `FR-7` filter targets a real, filterable
 column on a real, committed dataset, and (3) every metric used by any dataset the dashboard's
 charts read is documented in this file's metric-definitions tables below.
 
 ```
-uv run python scripts/validate_dashboard_bundle.py
+uv run python scripts/test_dashboard_bundle.py
 ```
 
 ## Question a (P4-02) — orders/quantity/value sliced and filtered

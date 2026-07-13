@@ -19,7 +19,7 @@ this script reads the committed YAML directly and checks it is internally consis
 
 Usage
 -----
-    uv run python scripts/validate_dashboard_bundle.py
+    uv run python scripts/test_dashboard_bundle.py
 
 Exits non-zero on any missing chart/filter/doc gap -- this is a test, not a report. RED before
 ``bi/dashboards/adventure_works_sales.yaml`` exists (FileNotFoundError -- the feature is absent);

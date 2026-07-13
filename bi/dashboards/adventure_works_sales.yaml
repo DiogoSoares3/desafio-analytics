@@ -6,7 +6,7 @@ description: >-
   questions a-f -- onto one committed Superset dashboard. All charts read the same tested
   fct_sales / dim_* / bridge_order_sales_reason marts (Phase 2-3), no parallel metric layer
   (NFR-3). See bi/README.md for run instructions and the metric-definitions tables (the analogue
-  of documented DAX) and scripts/validate_dashboard_bundle.py for the outer BDD reconciliation
+  of documented DAX) and scripts/test_dashboard_bundle.py for the outer BDD reconciliation
   proof (P4-08).
 css: null
 slug: adventure-works-sales
@@ -23,7 +23,7 @@ metadata:
   # applies to all charts on this dashboard by default (Superset's cross-filter scoping), so
   # narrowing e.g. sales channel = online reshapes every hero KPI and every question chart at
   # once -- proven structurally (each targeted column is declared filterable: true on its
-  # dataset) by scripts/validate_dashboard_bundle.py.
+  # dataset) by scripts/test_dashboard_bundle.py.
   native_filter_configuration:
     - id: NATIVE_FILTER-sales_channel
       name: "Sales Channel"
@@ -132,7 +132,7 @@ metadata:
   chart_configuration: {}
   cross_filters_enabled: true
 # position: the dashboard layout tree. Every CHART node's meta.uuid must match a chart committed
-# under bi/charts/*.yaml -- scripts/validate_dashboard_bundle.py walks this tree and asserts every
+# under bi/charts/*.yaml -- scripts/test_dashboard_bundle.py walks this tree and asserts every
 # currently-committed chart is present (nothing built in P4-01..P4-07 is left off).
 position:
   DASHBOARD_VERSION_KEY: v2
