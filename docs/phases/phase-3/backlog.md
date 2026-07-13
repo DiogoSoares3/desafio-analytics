@@ -12,7 +12,7 @@
 | P3-02 | `bridge_order_sales_reason` (order × reason) | **done (PR #12)** | P3-01 |
 | P3-05 | All-channel dim rework: `dim_customer` (+stores) & `dim_credit_card` (+N/A) | **done (PR #13)** | P3-01 |
 | P3-03 | `fct_sales` (order-line grain, all channels, 7 FKs, metrics) | **done (PR #16)** | P3-01, P3-05 |
-| P3-04 | 2011 reconciliation + fact/bridge invariants | todo | P3-03, P3-02 |
+| P3-04 | 2011 reconciliation + fact/bridge invariants | **done** | P3-03, P3-02 |
 
 P3-01 (done) gated the phase. **P3-05 reworks two done Phase-2 dims for all-channel scope (ADR-0010) and
 must land before P3-03**, whose fact FKs (`customer_key`, `credit_card_key`) resolve over reseller lines.

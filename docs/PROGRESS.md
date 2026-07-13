@@ -6,11 +6,11 @@
 > `PRD.md` / `ARCHITECTURE.md` as needed.
 
 ## SDD-CURSOR
-- **Phase:** 3 (Fact + reconciliation)
-- **Doing:** — (P3-01, P3-02, P3-05, P3-03 all done; P3-04 not yet dispatched)
-- **Next:** dispatch P3-04 (2011 reconciliation + fact/bridge invariants) — now unblocked
-  (P3-03 + P3-02 both done). Last issue in Phase 3.
-- **Stop-reason:** clean boundary — P3-03 landed green (PR #16); no blocker.
+- **Phase:** 3 (Fact + reconciliation) — **COMPLETE** (5/5 issues done)
+- **Doing:** — (P3-01, P3-02, P3-05, P3-03, P3-04 all done)
+- **Next:** PLAN Phase 4 (Serving — EDA notebook, KPIs, Superset dashboard tiles answering
+  business questions a–f, FR-6/7/8/9).
+- **Stop-reason:** clean boundary — P3-04 landed green (PR #18); Phase 3 fully drained.
 
 ## Current status
 **Phase 3 (Fact + reconciliation) IN PROGRESS.** P3-01 **done + supervisor-verified** (PR #11): canonical
@@ -56,7 +56,26 @@ exactly; `is_online` splits 60,398 online / 60,919 reseller; `net_revenue` sums 
 exactly (diff 0.0000); 2011 `gross_revenue` = 12,646,112.16 exactly — **de-risks P3-04's reconciliation
 test.** Inner loop was `skipped` per the issue.
 
-**Next:** dispatch P3-04 (2011 reconciliation + fact/bridge invariants) — last issue in Phase 3.
+**P3-04 done** (PR #18): the phase's régua headline — three singular dbt tests over the built
+`fct_sales` + `bridge_order_sales_reason` (P3-03/P3-02), realizing the Gherkin scenario exactly as
+written (no edits). `fct_sales_gross_2011_reconciliation` (2011 `sum(gross_revenue)` =
+`12646112.16` exact, zero tolerance, ADR-0001); `fct_sales_net_revenue_reconciliation`
+(`sum(net_revenue)` = `sum(source salesorderdetail.line_total)` exact); `fct_sales_gross_invariant_under_bridge`
+(single-reason "Promotion" bridge join does not fan out gross for matched orders vs the direct
+`fct_sales` sum, ADR-0003). Grain uniqueness referenced P3-03's existing PK test, not duplicated.
+Inner loop `required`: RED proven by selecting the three test names before authoring them — "does
+not match any enabled nodes" (nodes did not exist); once added all three ran green immediately
+(PASS=3) with **no model/transform changes**, since P3-03 had already independently verified these
+figures on the built fact. `just build` clean-checkout PASS=138 (was 135, +3); `just test-source`
+PASS=44; `just lint` clean; re-verified from a wiped `target/`/`dbt_packages/`/DuckDB file clean
+rebuild.
+
+**Phase 3 (Fact + reconciliation) COMPLETE — 5/5 issues done** (P3-01, P3-02, P3-05, P3-03, P3-04).
+All phase DoD gates green: `dbt build` PASS=138, `dbt test --select source:*` PASS=44, all PK/FK/
+data-quality/reconciliation tests pass, 2011 gross reconciles exactly, fact/bridge documented.
+
+**Next:** PLAN Phase 4 (Serving) — EDA notebook, KPIs, Superset dashboard tiles answering business
+questions a–f (FR-6/7/8/9), commercial recommendations (FR-10).
 
 ## Tactical decisions (reversible; recorded here, not ADRs)
 - **Data = canonical public Microsoft AdventureWorks; DuckDB-only (no Postgres).** The ERD is the stock
@@ -80,15 +99,21 @@ _Empty: auto-merge lands issues straight to `done`._
 _none — Phase 2 closed at a clean boundary; files describe the position._
 
 ## Next actions
-1. Phase-3 backlog **approved** (confirm gate passed).
-2. P3-01, P3-02, P3-05, P3-03 all done. **Dispatch P3-04** (2011 reconciliation + fact/bridge
-   invariants) — now unblocked (depends on both P3-03 and P3-02). Last issue in Phase 3.
+1. Phase-3 backlog **approved and fully drained** (5/5 issues done, P3-04 last).
+2. **PLAN Phase 4** (Serving) — cut the phase-4 backlog via `/to-issues` from `docs/PRD.md`
+   FR-6/7/8/9/10 + `docs/ARCHITECTURE.md`: EDA notebook, KPI definitions, Superset BI-as-code
+   dashboard tiles answering business questions a–f, commercial recommendations.
 
 ## Open questions
 _None blocking._ The full-data ingestion question is resolved (tactical Parquet form above; the
 architecture already fixed the "seeds for units / full dataset for reconciliation" split).
 
 ## Worklog (most recent first)
+- **P3-04 done** (PR #18): 3 singular reconciliation/invariant tests over `fct_sales` +
+  `bridge_order_sales_reason` — 2011 gross = 12646112.16 exact, net_revenue = Σ LineTotal exact,
+  bridge join doesn't fan out gross for a single-reason filter. RED proven via absent test nodes;
+  green immediately with no model changes (P3-03 already reconciled). `dbt build` PASS=138.
+  **Phase 3 (Fact + reconciliation) COMPLETE — 5/5 issues.**
 - **P3-03 done** (PR #16): `fct_sales` at order-line grain, all channels — 7 FKs, `is_online`,
   gross/discount/net measures; fixed stale online-only staging filter (ADR-0010); 21 outer schema
   tests RED-then-green; `dbt build` PASS=135; net_revenue and 2011 gross both reconcile exactly.
