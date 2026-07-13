@@ -1,0 +1,258 @@
+table_name: question_d_top_cities
+schema: main
+description: >-
+  Question d (CHALLENGE.md): fct_sales order lines joined to every dimension the required filter
+  set (product, card type, sales reason, sales date, customer, status, city, state, country) needs
+  -- one row per sales-order line, no fan-out (ADR-0004). Sales reason is resolved via a correlated
+  subquery over bridge_order_sales_reason/dim_sales_reason (ADR-0003) rather than a join, so
+  aggregates over this dataset never fan out even before a reason filter is applied. Geography is
+  ship-to (ADR-0005). No parallel metric layer (NFR-3) -- every column/metric here is read straight
+  from the tested marts.
+main_dttm_col: order_date
+default_endpoint: null
+offset: 0
+cache_timeout: null
+sql: >-
+  select
+      fct_sales.sales_fact_key,
+      fct_sales.sales_order_number,
+      fct_sales.is_online,
+      fct_sales.order_qty,
+      fct_sales.gross_revenue,
+      fct_sales.discount_amount,
+      fct_sales.net_revenue,
+      dim_product.product_name,
+      dim_product.category_name,
+      dim_product.subcategory_name,
+      dim_credit_card.card_type,
+      dim_order_status.status_label,
+      dim_date.date_day as order_date,
+      dim_date.year,
+      dim_date.month_name,
+      dim_date.year_month,
+      dim_customer.full_name as customer_name,
+      dim_customer.customer_type,
+      dim_geography.city,
+      dim_geography.state_province,
+      dim_geography.country,
+      (
+          select string_agg(distinct dim_sales_reason.sales_reason_name, ', ')
+          from bridge_order_sales_reason
+          inner join dim_sales_reason
+              on bridge_order_sales_reason.sales_reason_key = dim_sales_reason.sales_reason_key
+          where bridge_order_sales_reason.sales_order_number = fct_sales.sales_order_number
+      ) as sales_reason_names
+  from fct_sales
+  left join dim_product
+      on fct_sales.product_key = dim_product.product_key
+  left join dim_credit_card
+      on fct_sales.credit_card_key = dim_credit_card.credit_card_key
+  left join dim_order_status
+      on fct_sales.order_status_key = dim_order_status.order_status_key
+  left join dim_date
+      on fct_sales.date_key = dim_date.date_key
+  left join dim_customer
+      on fct_sales.customer_key = dim_customer.customer_key
+  left join dim_geography
+      on fct_sales.geography_key = dim_geography.geography_key
+params: null
+template_params: null
+filter_select_enabled: true
+fetch_values_predicate: null
+extra: null
+uuid: 6f3e0a2a-6a2e-4c2b-9f0e-1a2b3c4d5e6f
+version: 1.0.0
+database_uuid: 834123f4-6949-458f-aa23-1f4a3dc03c37
+columns:
+  - column_name: sales_fact_key
+    verbose_name: Sales Fact Key
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: false
+    filterable: false
+    description: Hashed surrogate key of the underlying fct_sales line.
+  - column_name: sales_order_number
+    verbose_name: Sales Order Number
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Degenerate dimension -- business order number.
+  - column_name: is_online
+    verbose_name: Sales Channel (Online)
+    is_dttm: false
+    is_active: true
+    type: BOOLEAN
+    groupby: true
+    filterable: true
+    description: Channel attribute (ADR-0010) -- true for online orders, false for reseller orders.
+  - column_name: order_qty
+    verbose_name: Order Quantity
+    is_dttm: false
+    is_active: true
+    type: BIGINT
+    groupby: false
+    filterable: true
+    description: Units ordered on the line.
+  - column_name: gross_revenue
+    verbose_name: Gross Revenue
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: true
+    description: Pre-discount/pre-tax/pre-freight line revenue (ADR-0001).
+  - column_name: discount_amount
+    verbose_name: Discount Amount
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: true
+    description: Line discount.
+  - column_name: net_revenue
+    verbose_name: Net Revenue
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: true
+    description: gross_revenue - discount_amount (reconciles to source LineTotal, ADR-0001).
+  - column_name: product_name
+    verbose_name: Product
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Required filter -- product (dim_product).
+  - column_name: category_name
+    verbose_name: Product Category
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Product category (dim_product).
+  - column_name: subcategory_name
+    verbose_name: Product Subcategory
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Product subcategory (dim_product).
+  - column_name: card_type
+    verbose_name: Card Type
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Required filter -- card type (dim_credit_card).
+  - column_name: status_label
+    verbose_name: Order Status
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Required filter -- order status (dim_order_status).
+  - column_name: order_date
+    verbose_name: Order Date
+    is_dttm: true
+    is_active: true
+    type: DATE
+    groupby: true
+    filterable: true
+    description: Required filter -- sales date (dim_date).
+  - column_name: year
+    verbose_name: Year
+    is_dttm: false
+    is_active: true
+    type: BIGINT
+    groupby: true
+    filterable: true
+    description: Order year (dim_date).
+  - column_name: month_name
+    verbose_name: Month
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Order month name (dim_date).
+  - column_name: year_month
+    verbose_name: Year-Month
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Order year-month (dim_date), e.g. "2011-07".
+  - column_name: customer_name
+    verbose_name: Customer
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Required filter -- customer (dim_customer).
+  - column_name: customer_type
+    verbose_name: Customer Type
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: individual or store (dim_customer, ADR-0010).
+  - column_name: city
+    verbose_name: City
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Required filter -- ship-to city (dim_geography, ADR-0005).
+  - column_name: state_province
+    verbose_name: State/Province
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Required filter -- ship-to state/province (dim_geography, ADR-0005).
+  - column_name: country
+    verbose_name: Country
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Required filter -- ship-to country (dim_geography, ADR-0005).
+  - column_name: sales_reason_names
+    verbose_name: Sales Reason(s)
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: >-
+      Required filter -- comma-joined sales reason name(s) for the order (bridge_order_sales_reason
+      + dim_sales_reason, ADR-0003), resolved per-line via a correlated subquery so it never fans
+      out the fact grain.
+metrics:
+  # Question d (CHALLENGE.md): total transaction value ranking cities -- same formula as the P4-01
+  # hero KPI "Total Sales Revenue" (sum(gross_revenue)), so there is only one definition of
+  # "transaction value" across the dashboard (NFR-3, ADR-0001).
+  - metric_name: total_transaction_value
+    verbose_name: Total Transaction Value
+    metric_type: null
+    expression: SUM(gross_revenue)
+    description: >-
+      Total transaction value = sum(gross_revenue) (ADR-0001), same definition as the P4-01 hero
+      KPI "Total Sales Revenue" -- no parallel metric layer (NFR-3).
+    d3format: "$,.2f"
+    warning_text: null

@@ -1,0 +1,30 @@
+slice_name: "Question d: Top 5 Cities by Revenue"
+viz_type: table
+description: >-
+  CHALLENGE.md question d: "top 5 cities by total transaction value, filtered by product, card
+  type, sales reason, sales date, customer, status, city, state, and country." Ranks ship-to cities
+  (dim_geography, ADR-0005) by total_transaction_value, limited to the top 5. Filterable by every
+  column on question_d_top_cities.yaml -- product, card type, sales reason, sales date, customer,
+  status, city, state, country. Reconciles to a direct fct_sales/dim_geography aggregate -- see
+  scripts/validate_top5_cities.py (P4-05 outer test).
+params:
+  datasource: 6f3e0a2a-6a2e-4c2b-9f0e-1a2b3c4d5e6f__table
+  viz_type: table
+  query_mode: aggregate
+  groupby:
+    - city
+  metrics:
+    - total_transaction_value
+  row_limit: 5
+  order_desc: true
+  adhoc_filters: []
+  table_timestamp_format: smart_date
+  show_totals: false
+  column_config:
+    total_transaction_value:
+      d3NumberFormat: "$,.2f"
+query_context: null
+cache_timeout: null
+uuid: 9c7d4b1a-2e3f-4a5b-8c6d-7e8f9a0b1c2d
+version: 1.0.0
+dataset_uuid: 6f3e0a2a-6a2e-4c2b-9f0e-1a2b3c4d5e6f
