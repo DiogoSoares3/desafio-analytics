@@ -6,10 +6,14 @@ inspects the *executed* notebook's cells for the four required chart+commentary 
 the scenario: product mix, channel distribution, geography distribution, and promotion/discount
 impact.
 
-A section counts as satisfied when, within the notebook, a markdown cell whose text matches the
-section's keyword is followed (before the next matching section header) by:
+A section counts as satisfied when, within the notebook, a markdown **heading** cell (its first
+non-empty line starts with ``#``) whose heading text matches the section's keyword is followed
+(before the next matching section heading) by:
 - at least one non-empty markdown cell (commentary), and
 - at least one code cell producing a chart output (an image ``display_data``/``execute_result``).
+
+Matching is restricted to heading cells (not any prose mentioning the topic in passing, e.g. this
+notebook's own intro paragraph) so a section can't be satisfied by accident.
 
 Usage: ``uv run python scripts/check_eda_notebook.py``.
 Exit 0 = green, exit 1 = red (reason printed).
@@ -40,8 +44,20 @@ REQUIRED_SECTIONS = {
 }
 
 
+def _heading_line(markdown_text: str) -> str | None:
+    """The cell's first non-empty line, if it is a markdown heading (starts with ``#``)."""
+    for line in markdown_text.splitlines():
+        stripped = line.strip()
+        if stripped:
+            return stripped if stripped.startswith("#") else None
+    return None
+
+
 def _section_matched(markdown_text: str, keywords: tuple[str, ...]) -> bool:
-    lowered = markdown_text.lower()
+    heading = _heading_line(markdown_text)
+    if heading is None:
+        return False
+    lowered = heading.lower()
     return any(keyword in lowered for keyword in keywords)
 
 
