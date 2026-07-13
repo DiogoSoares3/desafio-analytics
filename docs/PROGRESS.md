@@ -8,9 +8,9 @@
 ## SDD-CURSOR
 - **Phase:** 4 (Serving)
 - **Doing:** none
-- **Next:** P4-01 — Superset ↔ DuckDB scaffold + hero KPI tiles (Revenue, Orders, Units, AOV)
-- **Stop-reason:** none — Phase 4 opened (`docs/phases/phase-4/prd.md` + `backlog.md`, 10 issues);
-  awaiting backlog-review confirmation (profile: `confirm`) before BUILD starts.
+- **Next:** P4-02..P4-07 (business questions a–f, any order, all now unblocked by P4-01)
+- **Stop-reason:** none — P4-01 landed green; hero-KPI Superset scaffold in place for later BI issues
+  to build on.
 
 ## Current status
 **Phase 3 (Fact + reconciliation) IN PROGRESS.** P3-01 **done + supervisor-verified** (PR #11): canonical
@@ -77,6 +77,27 @@ data-quality/reconciliation tests pass, 2011 gross reconciles exactly, fact/brid
 **Next:** PLAN Phase 4 (Serving) — EDA notebook, KPIs, Superset dashboard tiles answering business
 questions a–f (FR-6/7/8/9), commercial recommendations (FR-10).
 
+**Phase 4 (Serving) opened and IN PROGRESS.** `docs/phases/phase-4/prd.md` + `backlog.md` (10 issues)
+committed and confirmed.
+
+**P4-01 done**: BI-as-code Superset scaffold under `bi/` (ADR-0002) — SQLAlchemy database connection
+to the local DuckDB file (`bi/databases/adventureworks_duckdb.yaml`), a `fct_sales` dataset
+(`bi/datasets/main/fct_sales.yaml`) with four declared hero-KPI metrics (`total_sales_revenue`,
+`number_of_orders`, `units_sold`, `average_order_value` — FR-8, formulas exactly match
+`ARCHITECTURE.md` §fct_sales, no parallel metric layer per NFR-3), and four `big_number_total` hero
+charts exported as YAML under `bi/charts/`. Outer BDD test: `scripts/validate_hero_kpis.py` reads
+each hero chart's declared metric SQL straight from the committed YAML and asserts it equals a
+direct `fct_sales` aggregate written independently — RED proven (`FileNotFoundError` on
+`bi/datasets/main/fct_sales.yaml`, committed alone) before `bi/` existed, GREEN once the scaffold
+landed (all four reconcile exactly: revenue 110,373,889.3134; orders 31,465; units 274,914; AOV
+3,491.065672966407). `bi/README.md` has the run instructions (local Superset import) + a documented
+metric-definitions table (`FR-9`). Inner loop `skipped` per the issue (declarative config, no
+unit-decomposable logic). No dbt models changed — `just build` clean-checkout stays PASS=138
+(non-regression; Phase 4 adds no dbt models). Superset itself is not installed in this environment
+(BI-as-code — the runtime is separate from the repo's Python deps), so import was not exercised
+against a live server; reconciliation was proven directly against the built DuckDB file instead, per
+the issue's own scope note. **Unblocks P4-02..P4-08.**
+
 ## Tactical decisions (reversible; recorded here, not ADRs)
 - **Data = canonical public Microsoft AdventureWorks; DuckDB-only (no Postgres).** The ERD is the stock
   AW 2008 OLTP schema and `$12,646,112.16` is the well-known AW figure, so the challenge data is the
@@ -100,16 +121,23 @@ _none — Phase 2 closed at a clean boundary; files describe the position._
 
 ## Next actions
 1. Phase-3 backlog **approved and fully drained** (5/5 issues done, P3-04 last).
-2. **Phase 4 (Serving) opened** — `docs/phases/phase-4/prd.md` (realizes FR-6/7/8/9/10/11, NFR-3) +
-   `docs/phases/phase-4/backlog.md` (10 issues: P4-01 scaffold+hero KPIs, P4-02..P4-07 business
-   questions a–f, P4-08 deliverable-equivalence packaging, P4-09 EDA notebook, P4-10 recommendations
-   doc). Awaiting backlog-review **confirm** before BUILD dispatches P4-01.
+2. **Phase 4 (Serving) opened and confirmed** — `docs/phases/phase-4/prd.md` (realizes
+   FR-6/7/8/9/10/11, NFR-3) + `docs/phases/phase-4/backlog.md` (10 issues).
+3. **P4-01 done** — Superset scaffold + hero KPI tiles landed; datasets/connection ready for
+   P4-02..P4-08 to build on. P4-02..P4-07 (business questions a–f) and P4-09 (EDA notebook, already
+   independently unblocked) can now proceed in any order.
 
 ## Open questions
 _None blocking._ The full-data ingestion question is resolved (tactical Parquet form above; the
 architecture already fixed the "seeds for units / full dataset for reconciliation" split).
 
 ## Worklog (most recent first)
+- **P4-01 done**: `bi/` Superset-as-code scaffold (ADR-0002) — database connection to the local
+  DuckDB file, `fct_sales` dataset with 4 declared hero-KPI metrics (Total Revenue, Orders, Units
+  Sold, AOV — FR-8), 4 `big_number_total` hero charts. Outer test `scripts/validate_hero_kpis.py`
+  RED (bi/ absent) → committed alone → GREEN (all 4 KPIs reconcile exactly to direct `fct_sales`
+  aggregates). `just build` non-regression PASS=138. Inner loop skipped per issue. Unblocks
+  P4-02..P4-08.
 - **P3-04 done** (PR #18): 3 singular reconciliation/invariant tests over `fct_sales` +
   `bridge_order_sales_reason` — 2011 gross = 12646112.16 exact, net_revenue = Σ LineTotal exact,
   bridge join doesn't fan out gross for a single-reason filter. RED proven via absent test nodes;
