@@ -65,9 +65,16 @@ def dataset_metric_sql(dataset: dict, metric_name: str) -> str:
 
 def chart_metric_name(chart: dict) -> str:
     params = chart.get("params", {})
+    # Table-viz charts (this one) declare a `metrics` list; big_number_total charts (P4-01) declare
+    # a single `metric`. Support both so this helper works for either viz_type.
     metric = params.get("metric")
+    if metric is None:
+        metrics = params.get("metrics") or []
+        metric = metrics[0] if metrics else None
     if isinstance(metric, dict):
         return metric["label"]
+    if metric is None:
+        raise KeyError(f"chart {CHART_YAML.name} declares no 'metric'/'metrics'")
     return metric
 
 
