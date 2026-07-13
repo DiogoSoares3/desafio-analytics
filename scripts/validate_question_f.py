@@ -108,10 +108,17 @@ def dataset_metric_sql(dataset: dict, metric_name: str) -> str:
 
 
 def chart_metric_name(chart: dict) -> str:
+    """Pull the single metric name off a chart -- either the singular ``metric`` param
+    (big_number_total) or the first entry of the ``metrics`` list (table/aggregate charts)."""
     params = chart.get("params", {})
     metric = params.get("metric")
+    if metric is None:
+        metrics = params.get("metrics") or []
+        metric = metrics[0] if metrics else None
     if isinstance(metric, dict):
         return metric["label"]
+    if metric is None:
+        raise KeyError("no metric declared in chart params ('metric' or 'metrics')")
     return metric
 
 
