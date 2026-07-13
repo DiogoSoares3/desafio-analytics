@@ -150,16 +150,23 @@ Every capability sits in exactly one bucket. **Won't (this version)** *is* the o
   documented and committed to the git repository (GitHub link is a deliverable).
 
 ## Definition of done
-v1 is done when **all** hold:
-1. `dbt build` runs **green offline** (grader reproduces every number). *(NFR-1, NFR-2)*
-2. **2011 gross sales reconciles to $12,646,112.16 exactly** (ADR-0001 test green). *(FR-3)*
-3. Source, PK (unique+not_null on all dims+fact), and data-quality tests all pass. *(FR-4)*
-4. All marts (dims + fact) are documented. *(FR-5)*
-5. The Superset dashboard answers all six business questions (a–f) with the required filters, and the
-   deliverable-equivalence exports exist. *(FR-6, FR-7, FR-8, FR-9)*
-6. Actionable commercial recommendations for AW are produced, framed for Silvana. *(FR-10)*
-7. Manual/external artifacts exist: EDA notebook, business-rules doc, conceptual DW diagram (PDF), mockup,
-   slides, video. *(FR-11–FR-14)*
+v1 is done when **all** boxes below are checked.
+
+- [x] `dbt build` runs **green offline** (grader reproduces every number). *(NFR-1, NFR-2)*
+- [x] **2011 gross sales reconciles to $12,646,112.16 exactly** (ADR-0001 test green). *(FR-3)*
+- [x] Source, PK (unique+not_null on all dims+fact), and data-quality tests all pass. *(FR-4)*
+- [x] All marts (dims + fact) are documented. *(FR-5)*
+- [x] The Superset dashboard answers all six business questions (a–f) with the required filters, and the
+      deliverable-equivalence exports exist. *(FR-6, FR-7, FR-8, FR-9)*
+- [x] Actionable commercial recommendations for AW are produced, framed for Silvana. *(FR-10)*
+- [x] EDA notebook (code, charts, per-insight commentary). *(FR-11)* — `notebooks/eda.ipynb`
+- [x] Business-rules documentation. *(FR-12)* — `docs/business-rules.md`
+- [x] Conceptual DW diagram with source→mart lineage. *(FR-13)* — `docs/ARCHITECTURE.md` star-schema
+      Mermaid diagram (PDF)
+- [x] Dashboard mockup (JPEG). *(FR-14, part)* — `docs/dashboard-mockup.jpg`
+- [ ] Presentation slides + demo video (≤10 min). *(FR-14, part)*
+- [ ] *(Could)* Data-project plan PDF (objectives, stakeholders, risks/contingencies, ROI narrative).
+      *(FR-15)*
 
 ## Notes
 - **Channel:** v1 is **all sales** (online + reseller). Confirmed empirically 2026-07-11: 2011 all-sales
@@ -167,9 +174,12 @@ v1 is done when **all** hold:
   rule the reconciliation figure defines the included set → all channels. `OnlineOrderFlag` is retained
   as a **filterable channel attribute** on the fact so the commercial view can foreground online.
   See [ADR-0010](adrs/0010-sales-channel-scope.md).
-- **Open questions for `ARCHITECTURE.md`:** (1) sales-reason many-to-many resolution (bridge vs
-  primary-reason) and its effect on question f ("Promotion"); (2) exact fact grain (line vs header);
-  (3) date-spine range; (4) geography conformance across customer/ship-to addresses. These are
-  engineer-owned and resolved when `ARCHITECTURE.md` is authored.
+- **Open questions:** none remaining. The four engineer-owned questions raised for
+  `ARCHITECTURE.md` — (1) sales-reason many-to-many resolution and its effect on question f
+  ("Promotion"), (2) exact fact grain (line vs header), (3) date-spine range, (4) geography
+  conformance across customer/ship-to addresses — are resolved in `ARCHITECTURE.md` via
+  [ADR-0003](adrs/0003-sales-reason-multi-valued-bridge.md),
+  [ADR-0004](adrs/0004-sales-fact-grain-order-line.md), [ADR-0006](adrs/0006-date-spine.md), and
+  [ADR-0005](adrs/0005-geography-conformance-ship-to.md) respectively.
 - **Cross-references:** [ADR-0001](adrs/0001-gross-sales-definition-and-reconciliation.md),
   [ADR-0002](adrs/0002-bi-tool-apache-superset.md).

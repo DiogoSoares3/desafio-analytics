@@ -1,9 +1,9 @@
 # ARCHITECTURE — AdventureWorks Analytics Engineering
 
-> **VALIDATED (dev) — 2026-07-10.** Technical truth (how it's built). Referenced by `PRD.md`, not
+> **VALIDATED (Analytics Engineer) — 2026-07-10.** Technical truth (how it's built). Referenced by `PRD.md`, not
 > duplicated. A living document — update it when a decision closes; keep discarded alternatives.
 > Closed decisions: [ADR-0001](adrs/0001-gross-sales-definition-and-reconciliation.md) …
-> [ADR-0009](adrs/0009-medallion-via-dbt-layers.md) (index below).
+> [ADR-0010](adrs/0010-sales-channel-scope.md) (index below).
 
 ## Overview
 A dbt-core project transforms the raw `adventure_works` (online sales) schema into a conformed star
@@ -238,8 +238,9 @@ a–f with the required filters.
 | Power BI / Databricks AI-BI | Against the reproducibility constraint (ADR-0002). |
 
 ## Open questions
-_All four PRD open questions are now resolved (ADR-0003 sales-reason m2m, ADR-0004 grain, ADR-0006
-date-spine, ADR-0005 geography)._ Remaining to confirm **empirically during modeling** (not blocking):
-- Exact source columns that reproduce the 2011 = $12,646,112.16 figure (locked in ADR-0001 once verified).
-- Confirm the `adventure_works` curated schema matches the OLTP structure assumed here (staging absorbs
-  any shape differences).
+_None remaining._ All four PRD open questions are resolved (ADR-0003 sales-reason m2m, ADR-0004 grain,
+ADR-0006 date-spine, ADR-0005 geography). The two items once flagged for empirical confirmation during
+modeling are also closed: the source columns reproducing 2011 gross = $12,646,112.16 are locked in
+ADR-0001 (empirically verified 2026-07-11, all-channel basis — see ADR-0010), and the `adventure_works`
+curated schema has matched the OLTP structure assumed here through all 4 build phases (`dbt build`
+green, PASS=138) — staging absorbed the shape differences as anticipated, with no open gap.
