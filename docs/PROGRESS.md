@@ -8,10 +8,9 @@
 ## SDD-CURSOR
 - **Phase:** 4 (Serving)
 - **Doing:** none
-- **Next:** P4-08 (dashboard assembly + run instructions; all of P4-02..P4-07 now done); P4-10
-  waits on P4-08 + P4-09 (**P4-09 done**).
-- **Stop-reason:** none — P4-01, P4-02, P4-03, P4-04, P4-05, P4-06, P4-07, and P4-09 all landed
-  green; P4-08 is the only remaining Phase-4 issue before P4-10.
+- **Next:** P4-10 (commercial recommendations doc) — its only blockers, P4-08 and P4-09, are both
+  **done**. Phase 4 is otherwise fully drained (P4-01..P4-09 all done).
+- **Stop-reason:** none — P4-01..P4-09 all landed green; P4-10 is the only remaining Phase-4 issue.
 
 ## Current status
 **Phase 3 (Fact + reconciliation) COMPLETE — 5/5 issues done** (P3-01 canonical AdventureWorks →
@@ -194,6 +193,29 @@ the issue (declarative chart/metric config over already-tested marts). `just bui
 `just check` non-regression PASS=138 (Phase 4 adds no dbt models); re-verified from a fully clean
 detached-HEAD checkout.
 
+**P4-08 done**: `bi/dashboards/adventure_works_sales.yaml` — the deliverable-equivalence dashboard
+(`FR-9`, `ADR-0002`) assembling **every** chart from P4-01..P4-07 (the five hero-KPI tiles + the
+seven business-question charts a-f, question a has two charts) onto one committed Superset
+dashboard bundle. A dashboard-wide native filter set realizes `FR-7`: Sales Channel (`is_online`)
+plus Product, Card Type, Sales Reason, Order Date, Customer, Order Status, City, State, and
+Country — nine of the ten target `question_a_sales_detail` (the P4-02 dataset carrying the full
+required-filter column set), Sales Reason targets `question_a_sales_by_reason` (kept off the
+detail dataset to avoid fanning out the other dims via the bridge join, `ADR-0003`). Outer BDD:
+`scripts/validate_dashboard_bundle.py` — RED proven (`FileNotFoundError` on the not-yet-existing
+`bi/dashboards/adventure_works_sales.yaml`, committed alone); GREEN once the dashboard + updated
+`bi/README.md` landed: all 12 committed charts are referenced in the dashboard's `position` tree,
+all 10 `FR-7` filters target a real filterable column on a real committed dataset, and all 11
+distinct metric names used across the referenced datasets are documented in `bi/README.md`'s
+metric-definitions tables (no undocumented KPI/measure — the analogue of documented DAX). `just
+build` clean-checkout non-regression: PASS=138 (Phase 4 adds no dbt models); re-verified from a
+fully clean detached-HEAD worktree (fresh `just setup && just build`, then the outer test) — same
+PASS=138 and dashboard-bundle GREEN. All 7 prior `scripts/validate_*`/`test_*` outer tests
+re-run GREEN, confirming no regression. Superset itself still not installed in this environment
+(same as P4-01/P4-07 precedent) — reconciliation and structural completeness proven directly
+against the committed YAML + the built DuckDB file, no live server required. Inner loop `skipped`
+per the issue (packaging/assembly + documentation, no unit-decomposable logic). **Unblocks
+P4-10** (alongside the already-done P4-09) — Phase 4 is now fully drained except P4-10.
+
 ## Tactical decisions (reversible; recorded here, not ADRs)
 - **Data = canonical public Microsoft AdventureWorks; DuckDB-only (no Postgres).** The ERD is the stock
   AW 2008 OLTP schema and `$12,646,112.16` is the well-known AW figure, so the challenge data is the
@@ -239,7 +261,10 @@ _none — Phase 2 closed at a clean boundary; files describe the position._
 8. **P4-05 done** — top-5-cities (question d) chart landed.
 9. **P4-06 done** — question-e time series (orders/qty/value by month & year) chart landed.
 10. **P4-07 done** — question f + Promotion-Impact hero KPI landed. **All of P4-02..P4-07 are now
-    done.** Remaining: P4-08 → P4-10.
+    done.**
+11. **P4-08 done** — dashboard assembly (`bi/dashboards/adventure_works_sales.yaml`) + FR-7
+    dashboard-wide filters + finalized run instructions/metric docs landed. **Phase 4 is now fully
+    drained except P4-10** (blocked by P4-08 + P4-09, both done).
 
 ## Open questions
 _None blocking._ The full-data ingestion question is resolved (tactical Parquet form above; the
@@ -251,6 +276,15 @@ value non-vacuously. **P4-07's worker should use `sales_reason_name = 'On Promot
 against real data (3,515 matched orders), no rediscovery needed.
 
 ## Worklog (most recent first)
+- **P4-08 done**: `bi/dashboards/adventure_works_sales.yaml` assembles all 12 committed charts
+  (5 hero KPIs + 7 question a-f charts) onto one dashboard, wires all 10 `FR-7` dashboard-wide
+  filters (sales channel + product/card type/sales reason/order date/customer/order
+  status/city/state/country) against `question_a_sales_detail`/`question_a_sales_by_reason`, and
+  updates `bi/README.md` with the dashboard section + run instructions. Outer test
+  `scripts/validate_dashboard_bundle.py` RED (dashboard YAML absent) → committed alone → GREEN
+  (all charts referenced, all filters wired to real filterable columns, all 11 metrics
+  documented). `just build` non-regression PASS=138, re-verified from a fully clean detached-HEAD
+  worktree; all 7 prior outer tests re-run GREEN (no regression). Inner loop skipped per issue.
 - **P4-05 done**: question d — top 5 cities by revenue. Virtual dataset
   `bi/datasets/main/question_d_top_cities.yaml` (fct_sales + all 6 required filter dims, reason via
   correlated subquery to avoid bridge fan-out) + `bi/charts/question_d_top5_cities.yaml` (table,

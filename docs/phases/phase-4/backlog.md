@@ -19,7 +19,7 @@
 | P4-05 | Question d — top-5 cities by revenue | done | P4-01 |
 | P4-06 | Question e — orders/qty/value time series by month & year | done | P4-01 |
 | P4-07 | Question f + Promotion-impact hero KPI | done | P4-01 |
-| P4-08 | Deliverable-equivalence packaging (dashboard assembly + run instructions) | doing | P4-01..P4-07 |
+| P4-08 | Deliverable-equivalence packaging (dashboard assembly + run instructions) | done | P4-01..P4-07 |
 | P4-09 | EDA notebook | done | — |
 | P4-10 | Commercial recommendations doc | todo | P4-08, P4-09 |
 
@@ -267,11 +267,11 @@ Scenario: the full dashboard bundle is importable and answers every business que
   And the sales-channel filter (online/reseller) and the other required filters apply dashboard-wide
   And every KPI/measure used has a documented definition committed alongside the bundle
 ```
-- [ ] One dashboard assembling all P4-01–P4-07 charts + hero KPIs
-- [ ] Dashboard-wide sales-channel filter + the other `FR-7` filters
-- [ ] Run instructions (local import/re-run against the built DuckDB file)
-- [ ] Documented metric definitions for every KPI/measure on the dashboard
-- [ ] Full bundle re-verified importable from a clean checkout
+- [x] One dashboard assembling all P4-01–P4-07 charts + hero KPIs
+- [x] Dashboard-wide sales-channel filter + the other `FR-7` filters
+- [x] Run instructions (local import/re-run against the built DuckDB file)
+- [x] Documented metric definitions for every KPI/measure on the dashboard
+- [x] Full bundle re-verified importable from a clean checkout
 
 ### Inner loop (TDD)
 `skipped — packaging/assembly and documentation, no unit-decomposable logic; the import-and-render
