@@ -139,7 +139,7 @@ against real data (3,515 matched orders), no rediscovery needed.
   **gross revenue** (`SUM(gross_revenue)`), matching the P4-01 hero KPI "Total Sales Revenue" and
   the régua's headline gross figure — no parallel net-revenue ranking introduced (documented in
   `bi/README.md`'s new "business questions" metric table and in the dataset YAML's metric
-  description). Outer test `scripts/validate_top10_customers.py` RED (`bi/datasets/main/
+  description). Outer test `scripts/test_top10_customers.py` RED (`bi/datasets/main/
   question_c_top10_customers.yaml` absent) → committed alone → GREEN once the dataset/chart landed
   (top customer "Brakes and Gears" = $882,276.4966, exact match against a direct
   `fct_sales`/`dim_customer` aggregate). `just build` non-regression PASS=138; `just check` green;

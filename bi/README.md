@@ -54,12 +54,12 @@ aggregate, computed against the built DuckDB file directly (no live Superset ser
 uv run python scripts/validate_hero_kpis.py
 ```
 
-`scripts/validate_top10_customers.py` is the outer BDD test for the P4-04 question-c chart: it
+`scripts/test_top10_customers.py` is the outer BDD test for the P4-04 question-c chart: it
 checks the chart is configured to return exactly 10 rows ranked descending, and that the top
 customer's value reconciles to a direct `fct_sales`/`dim_customer` aggregate:
 
 ```
-uv run python scripts/validate_top10_customers.py
+uv run python scripts/test_top10_customers.py
 ```
 
 ## Documented metric definitions (hero KPIs)

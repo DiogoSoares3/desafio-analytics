@@ -6,7 +6,7 @@ description: >-
   choice), filterable by product, card type, sales reason, sales date, status, city, state, and
   country (FR-7 -- the underlying dataset declares each as `filterable: true`; dashboard-wide
   native filters are wired onto this chart in P4-08). Reconciles to a direct fct_sales/dim_customer
-  aggregate -- see scripts/validate_top10_customers.py (P4-04 outer test).
+  aggregate -- see scripts/test_top10_customers.py (P4-04 outer test).
 params:
   datasource: 877c59cb-e27e-4a7c-a120-66bfb1520593__table
   viz_type: table
