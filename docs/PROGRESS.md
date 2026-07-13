@@ -6,11 +6,11 @@
 > `PRD.md` / `ARCHITECTURE.md` as needed.
 
 ## SDD-CURSOR
-- **Phase:** 3 (Fact + reconciliation) — **COMPLETE** (5/5 issues done)
-- **Doing:** — (P3-01, P3-02, P3-05, P3-03, P3-04 all done)
-- **Next:** PLAN Phase 4 (Serving — EDA notebook, KPIs, Superset dashboard tiles answering
-  business questions a–f, FR-6/7/8/9).
-- **Stop-reason:** clean boundary — P3-04 landed green (PR #18); Phase 3 fully drained.
+- **Phase:** 4 (Serving)
+- **Doing:** none
+- **Next:** P4-01 — Superset ↔ DuckDB scaffold + hero KPI tiles (Revenue, Orders, Units, AOV)
+- **Stop-reason:** none — Phase 4 opened (`docs/phases/phase-4/prd.md` + `backlog.md`, 10 issues);
+  awaiting backlog-review confirmation (profile: `confirm`) before BUILD starts.
 
 ## Current status
 **Phase 3 (Fact + reconciliation) IN PROGRESS.** P3-01 **done + supervisor-verified** (PR #11): canonical
@@ -100,9 +100,10 @@ _none — Phase 2 closed at a clean boundary; files describe the position._
 
 ## Next actions
 1. Phase-3 backlog **approved and fully drained** (5/5 issues done, P3-04 last).
-2. **PLAN Phase 4** (Serving) — cut the phase-4 backlog via `/to-issues` from `docs/PRD.md`
-   FR-6/7/8/9/10 + `docs/ARCHITECTURE.md`: EDA notebook, KPI definitions, Superset BI-as-code
-   dashboard tiles answering business questions a–f, commercial recommendations.
+2. **Phase 4 (Serving) opened** — `docs/phases/phase-4/prd.md` (realizes FR-6/7/8/9/10/11, NFR-3) +
+   `docs/phases/phase-4/backlog.md` (10 issues: P4-01 scaffold+hero KPIs, P4-02..P4-07 business
+   questions a–f, P4-08 deliverable-equivalence packaging, P4-09 EDA notebook, P4-10 recommendations
+   doc). Awaiting backlog-review **confirm** before BUILD dispatches P4-01.
 
 ## Open questions
 _None blocking._ The full-data ingestion question is resolved (tactical Parquet form above; the
