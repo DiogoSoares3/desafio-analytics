@@ -1,0 +1,296 @@
+dashboard_title: "Adventure Works — Sales"
+description: >-
+  Deliverable-equivalence dashboard (P4-08, ADR-0002, FR-9): assembles every chart built in
+  P4-01-P4-07 -- the five hero-KPI tiles (Total Sales Revenue, Number of Orders, Units Sold,
+  Average Order Value, Promotion-Impact Revenue) and the seven charts answering CHALLENGE.md
+  questions a-f -- onto one committed Superset dashboard. All charts read the same tested
+  fct_sales / dim_* / bridge_order_sales_reason marts (Phase 2-3), no parallel metric layer
+  (NFR-3). See bi/README.md for run instructions and the metric-definitions tables (the analogue
+  of documented DAX) and scripts/validate_dashboard_bundle.py for the outer BDD reconciliation
+  proof (P4-08).
+css: null
+slug: adventure-works-sales
+uuid: 4c9c4c9a-2f7e-4a1e-8f5a-6d0e3f2c1b7a
+version: 1.0.0
+metadata:
+  color_scheme: supersetColors
+  refresh_frequency: 0
+  # FR-7: the dashboard-wide filter set -- sales channel (is_online, online/reseller) plus every
+  # other required filter (product, card type, sales reason, order date, customer, order status,
+  # city, state, country). Targets question_a_sales_detail (P4-02), the dataset carrying the full
+  # required-filter column set (question_a_sales_by_reason for the reason-only column, since a
+  # reason join is kept off the detail dataset to avoid fan-out, ADR-0003). Every native filter
+  # applies to all charts on this dashboard by default (Superset's cross-filter scoping), so
+  # narrowing e.g. sales channel = online reshapes every hero KPI and every question chart at
+  # once -- proven structurally (each targeted column is declared filterable: true on its
+  # dataset) by scripts/validate_dashboard_bundle.py.
+  native_filter_configuration:
+    - id: NATIVE_FILTER-sales_channel
+      name: "Sales Channel"
+      filterType: filter_select
+      targets:
+        - datasetUuid: 018c4e65-289c-4f34-9861-6606f5f8051a
+          column:
+            name: is_online
+      scope:
+        rootPath: [ROOT_ID]
+        excluded: []
+    - id: NATIVE_FILTER-product
+      name: "Product"
+      filterType: filter_select
+      targets:
+        - datasetUuid: 018c4e65-289c-4f34-9861-6606f5f8051a
+          column:
+            name: product_name
+      scope:
+        rootPath: [ROOT_ID]
+        excluded: []
+    - id: NATIVE_FILTER-card_type
+      name: "Card Type"
+      filterType: filter_select
+      targets:
+        - datasetUuid: 018c4e65-289c-4f34-9861-6606f5f8051a
+          column:
+            name: card_type
+      scope:
+        rootPath: [ROOT_ID]
+        excluded: []
+    - id: NATIVE_FILTER-sales_reason
+      name: "Sales Reason"
+      filterType: filter_select
+      targets:
+        - datasetUuid: 21627596-9b32-4772-bf11-346639fd69be
+          column:
+            name: sales_reason_name
+      scope:
+        rootPath: [ROOT_ID]
+        excluded: []
+    - id: NATIVE_FILTER-order_date
+      name: "Order Date"
+      filterType: filter_time
+      targets:
+        - datasetUuid: 018c4e65-289c-4f34-9861-6606f5f8051a
+          column:
+            name: date_day
+      scope:
+        rootPath: [ROOT_ID]
+        excluded: []
+    - id: NATIVE_FILTER-customer
+      name: "Customer"
+      filterType: filter_select
+      targets:
+        - datasetUuid: 018c4e65-289c-4f34-9861-6606f5f8051a
+          column:
+            name: customer_name
+      scope:
+        rootPath: [ROOT_ID]
+        excluded: []
+    - id: NATIVE_FILTER-order_status
+      name: "Order Status"
+      filterType: filter_select
+      targets:
+        - datasetUuid: 018c4e65-289c-4f34-9861-6606f5f8051a
+          column:
+            name: status_label
+      scope:
+        rootPath: [ROOT_ID]
+        excluded: []
+    - id: NATIVE_FILTER-city
+      name: "City"
+      filterType: filter_select
+      targets:
+        - datasetUuid: 018c4e65-289c-4f34-9861-6606f5f8051a
+          column:
+            name: city
+      scope:
+        rootPath: [ROOT_ID]
+        excluded: []
+    - id: NATIVE_FILTER-state
+      name: "State/Province"
+      filterType: filter_select
+      targets:
+        - datasetUuid: 018c4e65-289c-4f34-9861-6606f5f8051a
+          column:
+            name: state_province
+      scope:
+        rootPath: [ROOT_ID]
+        excluded: []
+    - id: NATIVE_FILTER-country
+      name: "Country"
+      filterType: filter_select
+      targets:
+        - datasetUuid: 018c4e65-289c-4f34-9861-6606f5f8051a
+          column:
+            name: country
+      scope:
+        rootPath: [ROOT_ID]
+        excluded: []
+  default_filters: "{}"
+  filter_scopes: {}
+  expanded_slices: {}
+  timed_refresh_immune_slices: []
+  chart_configuration: {}
+  cross_filters_enabled: true
+# position: the dashboard layout tree. Every CHART node's meta.uuid must match a chart committed
+# under bi/charts/*.yaml -- scripts/validate_dashboard_bundle.py walks this tree and asserts every
+# currently-committed chart is present (nothing built in P4-01..P4-07 is left off).
+position:
+  DASHBOARD_VERSION_KEY: v2
+  ROOT_ID:
+    type: ROOT
+    id: ROOT_ID
+    children: [GRID_ID]
+  GRID_ID:
+    type: GRID
+    id: GRID_ID
+    children:
+      - ROW-hero-kpis
+      - ROW-question-a
+      - ROW-question-b-c
+      - ROW-question-d-e
+      - ROW-question-f
+  HEADER_ID:
+    type: HEADER
+    id: HEADER_ID
+    meta:
+      text: "Adventure Works — Sales"
+  ROW-hero-kpis:
+    type: ROW
+    id: ROW-hero-kpis
+    children:
+      - CHART-hero_total_sales_revenue
+      - CHART-hero_number_of_orders
+      - CHART-hero_units_sold
+      - CHART-hero_average_order_value
+      - CHART-hero_promotion_impact
+  CHART-hero_total_sales_revenue:
+    type: CHART
+    id: CHART-hero_total_sales_revenue
+    children: []
+    meta:
+      uuid: 6aa41433-a1e7-4981-9bc2-070d92a4762b
+      sliceName: "Hero KPI: Total Sales Revenue"
+      width: 3
+      height: 20
+  CHART-hero_number_of_orders:
+    type: CHART
+    id: CHART-hero_number_of_orders
+    children: []
+    meta:
+      uuid: 2751f72a-34d6-400c-a317-54c45338a0c9
+      sliceName: "Hero KPI: Number of Orders"
+      width: 3
+      height: 20
+  CHART-hero_units_sold:
+    type: CHART
+    id: CHART-hero_units_sold
+    children: []
+    meta:
+      uuid: cd25ce92-8542-46ee-bb39-9eba844c2c83
+      sliceName: "Hero KPI: Units Sold"
+      width: 3
+      height: 20
+  CHART-hero_average_order_value:
+    type: CHART
+    id: CHART-hero_average_order_value
+    children: []
+    meta:
+      uuid: f626e8ca-7318-4421-a7f2-74b0cb39c24f
+      sliceName: "Hero KPI: Average Order Value"
+      width: 3
+      height: 20
+  CHART-hero_promotion_impact:
+    type: CHART
+    id: CHART-hero_promotion_impact
+    children: []
+    meta:
+      uuid: 85610491-2e2a-4820-ae5e-5e7536dab435
+      sliceName: "Hero KPI: Promotion-Impact Revenue"
+      width: 3
+      height: 20
+  ROW-question-a:
+    type: ROW
+    id: ROW-question-a
+    children:
+      - CHART-question_a_orders_qty_value
+      - CHART-question_a_orders_qty_value_by_reason
+  CHART-question_a_orders_qty_value:
+    type: CHART
+    id: CHART-question_a_orders_qty_value
+    children: []
+    meta:
+      uuid: ee985bbc-d60f-4f6b-b02b-87293eacd561
+      sliceName: "Question a: Orders / Quantity / Value by Product"
+      width: 6
+      height: 40
+  CHART-question_a_orders_qty_value_by_reason:
+    type: CHART
+    id: CHART-question_a_orders_qty_value_by_reason
+    children: []
+    meta:
+      uuid: 7b4187a2-d2ca-44ae-8f4e-e935504178b7
+      sliceName: "Question a: Orders / Quantity / Value by Sales Reason"
+      width: 6
+      height: 40
+  ROW-question-b-c:
+    type: ROW
+    id: ROW-question-b-c
+    children:
+      - CHART-question_b_top_products_by_aov
+      - CHART-question_c_top10_customers
+  CHART-question_b_top_products_by_aov:
+    type: CHART
+    id: CHART-question_b_top_products_by_aov
+    children: []
+    meta:
+      uuid: e35d2c26-f0cd-4623-8c1d-00baa69fd187
+      sliceName: "Question b: Top Products by Average Order Value"
+      width: 6
+      height: 40
+  CHART-question_c_top10_customers:
+    type: CHART
+    id: CHART-question_c_top10_customers
+    children: []
+    meta:
+      uuid: c2f0ac09-e5ad-42a1-a089-18bfd079511c
+      sliceName: "Question c: Top 10 Customers by Total Transaction Value"
+      width: 6
+      height: 40
+  ROW-question-d-e:
+    type: ROW
+    id: ROW-question-d-e
+    children:
+      - CHART-question_d_top5_cities
+      - CHART-question_e_orders_qty_value_by_month
+  CHART-question_d_top5_cities:
+    type: CHART
+    id: CHART-question_d_top5_cities
+    children: []
+    meta:
+      uuid: 9c7d4b1a-2e3f-4a5b-8c6d-7e8f9a0b1c2d
+      sliceName: "Question d: Top 5 Cities by Revenue"
+      width: 6
+      height: 40
+  CHART-question_e_orders_qty_value_by_month:
+    type: CHART
+    id: CHART-question_e_orders_qty_value_by_month
+    children: []
+    meta:
+      uuid: 119f9fbe-30f0-49fd-8444-7370f9160069
+      sliceName: "Question e: Orders, Quantity & Value by Month/Year"
+      width: 6
+      height: 40
+  ROW-question-f:
+    type: ROW
+    id: ROW-question-f
+    children:
+      - CHART-question_f_top_product_promotion
+  CHART-question_f_top_product_promotion:
+    type: CHART
+    id: CHART-question_f_top_product_promotion
+    children: []
+    meta:
+      uuid: eb81e096-8968-4380-9e4c-42344382767b
+      sliceName: "Question f: Top Product -- On Promotion"
+      width: 6
+      height: 40
