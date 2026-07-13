@@ -8,9 +8,10 @@
 ## SDD-CURSOR
 - **Phase:** 4 (Serving)
 - **Doing:** none
-- **Next:** P4-02..P4-07 (business questions a–f, any order, all now unblocked by P4-01)
-- **Stop-reason:** none — P4-01 landed green; hero-KPI Superset scaffold in place for later BI issues
-  to build on.
+- **Next:** P4-02..P4-07 (business questions a–f, any order, unblocked by P4-01); P4-08 waits on
+  P4-02..P4-07; P4-10 waits on P4-08 + P4-09 (**P4-09 now done**).
+- **Stop-reason:** none — P4-01 and P4-09 both landed green (independent tracks); P4-02..P4-07 are the
+  next unblocked slices.
 
 ## Current status
 **Phase 3 (Fact + reconciliation) IN PROGRESS.** P3-01 **done + supervisor-verified** (PR #11): canonical
@@ -98,6 +99,39 @@ unit-decomposable logic). No dbt models changed — `just build` clean-checkout 
 against a live server; reconciliation was proven directly against the built DuckDB file instead, per
 the issue's own scope note. **Unblocks P4-02..P4-08.**
 
+**P4-09 done** (PR #20): `notebooks/eda.ipynb` — an EDA notebook reading `data/adventureworks.duckdb`'s
+built marts directly via a DuckDB connection (no separate extract, per `CLAUDE.md`'s "Python is a thin
+layer" convention), with a chart + grounded commentary for each of the four required topics: product
+mix, channel distribution (`is_online`), geography distribution, and Promotion/discount impact. Outer
+BDD: `scripts/check_eda_notebook.py` (`just eda`) executes the notebook end-to-end via `nbclient` and
+asserts no cell errors plus all four required chart+commentary sections present. RED proven
+(`notebooks/eda.ipynb` did not exist), committed alone; while building the notebook found and fixed a
+check-script bug (markdown heading matching wasn't restricted to actual `#` headings, so the intro
+paragraph's own prose could satisfy a section before any chart cell was reached) — committed as a
+separate, strictly-stronger test-only fix before the implementation commit. GREEN once
+`notebooks/eda.ipynb` landed; re-verified from a fully clean state (wiped `.venv`, `target/`,
+`dbt_packages/`, the DuckDB file, re-ran `just setup && just build && just eda`). `just build`
+non-regression: PASS=138 (Phase 4 adds no dbt models). `just check` (lint+typecheck+build) green.
+
+Grounded numbers (reconcile to the tested marts, independent of Superset's chart engine): product mix
+— Bikes ~86% of gross revenue from ~30% of units; channel — resellers are ~12% of orders but ~73% of
+revenue (AOV ~$21.3K vs ~$1.06K online, ~20x gap); geography — the US alone is ~57% of gross revenue;
+promotion — 3,515 online "On Promotion" orders = $6,361,828.95 gross, confirmed identical via direct
+`fct_sales` sum and the bridge join (no fan-out, same invariant P3-04's singular test proves
+structurally). **Flags a nuance for P4-07/P4-10**: P3-04's singular test filters the literal string
+`sales_reason_name = 'Promotion'`, which matches **no row** in `dim_sales_reason` — the actual reason is
+named `"On Promotion"` with `sales_reason_type = 'Promotion'`. The test still passes today because both
+sides of its comparison are vacuously `NULL` (no matched orders), not because the invariant was actually
+exercised on a non-empty set. P4-07 (question f) uses the same literal-string filter in its Gherkin —
+that scenario will need `sales_reason_type = 'Promotion'` (or `sales_reason_name = 'On Promotion'`) to
+return real data; flagging here rather than silently fixing P3-04 (closed, not this issue's scope). Also
+found: the notebook's real `discount_amount` ($527,507.91 total) sits entirely on the reseller/store
+channel (60,919 lines), zero on the 60,398 online lines — the online "Promotion" reason tag and the
+fact's dollar discount are two structurally distinct phenomena on opposite channels, a nuance worth
+surfacing to P4-10's recommendations. Inner loop `skipped` per the issue (exploratory/narrative
+notebook, no unit-decomposable logic). **Independent of the Superset track — does not unblock/depend on
+P4-01..P4-08.**
+
 ## Tactical decisions (reversible; recorded here, not ADRs)
 - **Data = canonical public Microsoft AdventureWorks; DuckDB-only (no Postgres).** The ERD is the stock
   AW 2008 OLTP schema and `$12,646,112.16` is the well-known AW figure, so the challenge data is the
@@ -124,14 +158,30 @@ _none — Phase 2 closed at a clean boundary; files describe the position._
 2. **Phase 4 (Serving) opened and confirmed** — `docs/phases/phase-4/prd.md` (realizes
    FR-6/7/8/9/10/11, NFR-3) + `docs/phases/phase-4/backlog.md` (10 issues).
 3. **P4-01 done** — Superset scaffold + hero KPI tiles landed; datasets/connection ready for
-   P4-02..P4-08 to build on. P4-02..P4-07 (business questions a–f) and P4-09 (EDA notebook, already
-   independently unblocked) can now proceed in any order.
+   P4-02..P4-08 to build on. P4-02..P4-07 (business questions a–f) can now proceed in any order.
+4. **P4-09 done** — EDA notebook landed (independent of the Superset track). Flags a P3-04
+   literal-string filter nuance (`sales_reason_name = 'Promotion'` matches no row; use
+   `sales_reason_type = 'Promotion'` / `sales_reason_name = 'On Promotion'`) relevant to **P4-07**'s
+   scenario before that issue is picked up. Remaining: P4-02..P4-07 → P4-08 → P4-10.
 
 ## Open questions
 _None blocking._ The full-data ingestion question is resolved (tactical Parquet form above; the
 architecture already fixed the "seeds for units / full dataset for reconciliation" split).
+**Non-blocking flag for P4-07** (raised by P4-09): its Gherkin scenario filters
+`sales_reason_name = 'Promotion'`, which matches no row in `dim_sales_reason` (the real reason is named
+`"On Promotion"`, `sales_reason_type = 'Promotion'`) — P3-04's existing singular test passes vacuously
+on this same literal string. P4-07's worker should use `sales_reason_type = 'Promotion'` (or the exact
+name `'On Promotion'`) to get real, non-empty results; not a `needs-decision` (the fix is mechanical,
+same intent), just called out so it isn't rediscovered from scratch.
 
 ## Worklog (most recent first)
+- **P4-09 done** (PR #20): `notebooks/eda.ipynb` — chart + commentary for product mix, channel
+  distribution (`is_online`), geography distribution, Promotion/discount impact, reading the built
+  marts directly via DuckDB. Outer test `scripts/check_eda_notebook.py` (`just eda`) RED (notebook
+  absent) → committed alone; found + fixed a heading-matching bug in the checker (stronger, separate
+  commit) → GREEN once the notebook landed, re-verified from a fully clean state. `just build`
+  non-regression PASS=138; `just check` green. Flags a P3-04 literal-string nuance relevant to P4-07.
+  Inner loop skipped per issue. Independent of the Superset track.
 - **P4-01 done**: `bi/` Superset-as-code scaffold (ADR-0002) — database connection to the local
   DuckDB file, `fct_sales` dataset with 4 declared hero-KPI metrics (Total Revenue, Orders, Units
   Sold, AOV — FR-8), 4 `big_number_total` hero charts. Outer test `scripts/validate_hero_kpis.py`
