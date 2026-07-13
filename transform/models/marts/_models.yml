@@ -157,6 +157,30 @@ models:
         data_tests:
           - not_null
 
+  - name: bridge_order_sales_reason
+    description: >
+      Multi-valued bridge (Gold), grain order × sales reason (ADR-0003). Resolves orders to
+      every sales reason they carry without fanning `fct_sales` out — the base fact carries no
+      reason FK, so gross revenue never double-counts. Reached from `fct_sales` via
+      `sales_order_number`.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [sales_order_number, sales_reason_key]
+    columns:
+      - name: sales_order_number
+        description: Degenerate order identifier (business order number), FK-joinable from fct_sales.
+        data_tests:
+          - not_null
+      - name: sales_reason_key
+        description: Hashed surrogate FK to dim_sales_reason (dbt_utils.generate_surrogate_key over sales_reason_id; ADR-0007).
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_sales_reason')
+                field: sales_reason_key
+
   - name: dim_order_status
     description: >
       Conformed order status dimension (Gold), one row per AdventureWorks order status code
