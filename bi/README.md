@@ -18,6 +18,7 @@ bi/
   datasets/main/question_a_sales_by_reason.yaml     # P4-02 -- fct_sales x bridge x dim_sales_reason
   datasets/main/question_b_product_aov.yaml         # P4-03 -- question-b virtual dataset
   datasets/main/question_c_top10_customers.yaml     # P4-04 -- question-c virtual dataset
+  datasets/main/question_d_top_cities.yaml          # P4-05 -- question-d virtual dataset
   datasets/main/question_e_sales_by_month.yaml      # P4-06 -- question-e virtual dataset (fct_sales x dim_date)
   datasets/main/vw_promotion_reason_sales.yaml      # P4-07 -- virtual (SQL) dataset for question f
   charts/hero_*.yaml                                # the five hero-KPI tiles (big_number_total)
@@ -25,11 +26,11 @@ bi/
   charts/question_a_orders_qty_value_by_reason.yaml # P4-02 -- question a's sales-reason slice
   charts/question_b_top_products_by_aov.yaml        # P4-03 -- question-b chart
   charts/question_c_top10_customers.yaml            # P4-04 -- top-10-customers table chart
+  charts/question_d_top5_cities.yaml                # P4-05 -- top-5-cities table chart
   charts/question_e_orders_qty_value_by_month.yaml  # P4-06 -- question-e time-series chart
   charts/question_f_top_product_promotion.yaml      # P4-07 -- question f: top product, "On Promotion"
 ```
-Later issues (P4-05, P4-08) add datasets/charts for the remaining business questions and
-assemble a `dashboards/*.yaml`.
+The last remaining issue (P4-08) assembles all of the above into one committed `dashboards/*.yaml`.
 
 ## Question a (P4-02) — orders/quantity/value sliced and filtered
 
@@ -63,6 +64,26 @@ total (no fan-out) with no query errors:
 uv run python scripts/validate_question_a.py
 ```
 
+## Question c — top 10 customers by revenue (`P4-04`)
+
+`CHALLENGE.md` question c: "top 10 customers by total transaction value, filtered by product, card
+type, sales reason, sales date, status, city, state, and country." The
+`question_c_top10_customers` dataset joins `fct_sales` to `dim_customer` and the other required
+filter dims.
+
+## Question d — top 5 cities by revenue (`P4-05`)
+
+`CHALLENGE.md` question d: "top 5 cities by total transaction value, filtered by product, card
+type, sales reason, sales date, customer, status, city, state, and country." The
+`question_d_top_cities` dataset is a **virtual** (SQL-defined) Superset dataset joining `fct_sales`
+to `dim_product`, `dim_credit_card`, `dim_order_status`, `dim_date`, `dim_customer`, and
+`dim_geography` (ship-to, ADR-0005) — one row per sales-order line, no fan-out (ADR-0004). The
+sales-reason filter column is resolved per line via a correlated subquery over
+`bridge_order_sales_reason`/`dim_sales_reason` (ADR-0003) rather than a join, so grouping/aggregating
+over this dataset never fans out the fact grain, even before any reason filter narrows it to a
+single value. The `question_d_top5_cities` chart (`table`, `query_mode: aggregate`) groups by
+`city`, ranks by `total_transaction_value` descending, and limits to 5 rows.
+
 ## Run instructions (local import)
 
 1. Build the marts this bundle reads: `just build` (creates `data/adventureworks.duckdb`).
@@ -88,8 +109,9 @@ uv run python scripts/validate_question_a.py
    `datasets/main/vw_promotion_reason_sales.yaml` (Promotion-Impact Revenue). Also find "Question
    a: Orders / Quantity / Value by Product" and "...by Sales Reason" (P4-02), "Question b: Top
    Products by Average Order Value" (P4-03), "Question c: Top 10 Customers by Total Transaction
-   Value" (P4-04), "Question e: Orders, Quantity & Value by Month/Year" (P4-06), and "Question f:
-   Top Product -- On Promotion" (P4-07, answers `CHALLENGE.md` question f) under Charts.
+   Value" (P4-04), "Question d: Top 5 Cities by Revenue" (P4-05), "Question e: Orders, Quantity &
+   Value by Month/Year" (P4-06), and "Question f: Top Product -- On Promotion" (P4-07, answers
+   `CHALLENGE.md` question f) under Charts.
 
 ## Verifying reconciliation without a running Superset
 
@@ -121,6 +143,16 @@ customer's value reconciles to a direct `fct_sales`/`dim_customer` aggregate:
 
 ```
 uv run python scripts/test_top10_customers.py
+```
+
+`scripts/validate_top5_cities.py` is the outer BDD test for question d (`P4-05`): it re-executes the
+`question_d_top_cities` dataset SQL + the `question_d_top5_cities` chart's groupby/metric/row_limit
+against the built DuckDB file and asserts exactly 5 distinct cities come back, ranked descending,
+with the top city reconciling to a direct `fct_sales` joined `dim_geography` (ship-to, ADR-0005)
+aggregate:
+
+```
+uv run python scripts/validate_top5_cities.py
 ```
 
 `scripts/validate_question_e_timeseries.py` is the outer BDD test for the question-e time series
@@ -168,5 +200,6 @@ real value throughout.
 |---|---|---|---|---|
 | a — orders/qty/value sliced and filtered | `number_of_orders` / `units_purchased` / `total_transaction_value` (`question_a_sales_detail`, `question_a_sales_by_reason`) | `COUNT(DISTINCT sales_order_number)` / `SUM(order_qty)` / `SUM(gross_revenue)` | **Gross** (same convention as the hero KPIs) | ADR-0001 |
 | c — top-10 customers by revenue | `total_transaction_value` (`question_c_top10_customers`) | `SUM(gross_revenue)` | **Gross** — chosen to match the P4-01 hero KPI "Total Sales Revenue" and the régua's own headline reconciliation figure (2011 all-channel gross = $12,646,112.16); no parallel net-revenue ranking is introduced | ADR-0001 |
+| d — top-5 cities by revenue | `total_transaction_value` (`question_d_top_cities`) | `SUM(gross_revenue)` | **Gross** — same definition as the P4-01 hero KPI "Total Sales Revenue" and question c's `total_transaction_value` (NFR-3, one definition across the dashboard) | ADR-0001 |
 | e — orders/qty/value by month & year | `monthly_order_count` / `monthly_quantity` / `monthly_value` (`question_e_sales_by_month`) | `COUNT(DISTINCT sales_order_number)` / `SUM(order_qty)` / `SUM(gross_revenue)` | **Gross** (same convention as above) — grouped by `year_month` (from `dim_date`, ADR-0006's gap-free day-grain `date_spine`) over `fct_sales` joined to `dim_date` on `date_key` | ADR-0001, ADR-0006 |
 | f — top product by units for "On Promotion" | `units` (`vw_promotion_reason_sales`) | `SUM(order_qty)` | n/a (units, not revenue) | ADR-0003 |
