@@ -8,11 +8,10 @@
 ## SDD-CURSOR
 - **Phase:** 4 (Serving)
 - **Doing:** none
-- **Next:** P4-05 (last remaining business question, unblocked by P4-01; **P4-02, P4-03, P4-04,
-  P4-06, P4-07 now done**); P4-08 waits on P4-02..P4-07; P4-10 waits on P4-08 + P4-09
-  (**P4-09 done**).
-- **Stop-reason:** none — P4-01, P4-02, P4-03, P4-04, P4-06, P4-07, and P4-09 all landed green;
-  P4-05 is the last unblocked slice before P4-08.
+- **Next:** P4-08 (dashboard assembly + run instructions; all of P4-02..P4-07 now done); P4-10
+  waits on P4-08 + P4-09 (**P4-09 done**).
+- **Stop-reason:** none — P4-01, P4-02, P4-03, P4-04, P4-05, P4-06, P4-07, and P4-09 all landed
+  green; P4-08 is the only remaining Phase-4 issue before P4-10.
 
 ## Current status
 **Phase 3 (Fact + reconciliation) COMPLETE — 5/5 issues done** (P3-01 canonical AdventureWorks →
@@ -101,6 +100,40 @@ separate, strictly-stronger test-only fix before the implementation commit. GREE
 `notebooks/eda.ipynb` landed; re-verified from a fully clean state (wiped `.venv`, `target/`,
 `dbt_packages/`, the DuckDB file, re-ran `just setup && just build && just eda`). `just build`
 non-regression: PASS=138 (Phase 4 adds no dbt models). `just check` (lint+typecheck+build) green.
+
+**P4-04 done**: question c (`CHALLENGE.md` "top 10 customers by total transaction value") — a
+virtual dataset (`bi/datasets/main/question_c_top10_customers.yaml`) joining `fct_sales` to
+`dim_customer` and the other required-filter dims, with a scalar per-order sales-reason subquery
+over `bridge_order_sales_reason` (no join fan-out), and a `table` chart
+(`bi/charts/question_c_top10_customers.yaml`) ranking customers by `total_transaction_value =
+SUM(gross_revenue)` (same gross definition as the P4-01 hero KPI, documented in `bi/README.md`'s
+"business questions" metric table), `row_limit: 10`. Outer test
+`scripts/validate_top10_customers.py` RED → committed alone → GREEN (top customer "Brakes and
+Gears" = $882,276.4966, exact match against a direct `fct_sales`/`dim_customer` aggregate). `just
+build` non-regression PASS=138. Inner loop skipped per issue.
+
+**P4-05 done**: question d (`CHALLENGE.md` "top 5 cities by total transaction value") — a virtual
+(SQL-defined) Superset dataset (`bi/datasets/main/question_d_top_cities.yaml`) joining `fct_sales` to
+`dim_product`, `dim_credit_card`, `dim_order_status`, `dim_date`, `dim_customer`, and `dim_geography`
+(ship-to, ADR-0005) at order-line grain (no fan-out, ADR-0004), with the sales-reason filter column
+resolved per line via a correlated subquery over `bridge_order_sales_reason`/`dim_sales_reason`
+(ADR-0003) instead of a join, so aggregates never fan out — every required filter (product, card
+type, sales reason, sales date, customer, status, city, state, country) is exposed as a
+filterable/groupable column. A `table` chart (`bi/charts/question_d_top5_cities.yaml`, `query_mode:
+aggregate`) groups by city, orders by `total_transaction_value` (`= SUM(gross_revenue)`, same
+definition as the P4-01 hero KPI "Total Sales Revenue" — NFR-3, no parallel metric layer) descending,
+row-limited to 5. Outer BDD: `scripts/validate_top5_cities.py` re-executes the dataset SQL + chart
+groupby/metric/row_limit against the built DuckDB file directly (no live Superset needed, same
+pattern as `validate_hero_kpis.py`) — RED proven (`FileNotFoundError` on
+`bi/datasets/main/question_d_top_cities.yaml`, committed alone); while wiring the direct-aggregate
+oracle found and fixed a genuine SQL bug (undeclared alias `geography` instead of `dim_geography`) —
+committed as a separate, non-weakening test-only fix before the implementation commit. GREEN once the
+`bi/` dataset+chart landed: exactly 5 distinct cities returned, ranked descending, top city (Toronto,
+4,498,883.7327) reconciles exactly to a direct `fct_sales`/`dim_geography` aggregate. Re-verified from
+a fully clean state (wiped `.venv`, `target/`, `dbt_packages/`, the DuckDB file; `just setup && just
+build` PASS=138 non-regression, then `scripts/validate_top5_cities.py` GREEN again). `bi/README.md`
+updated (layout, run/verify instructions, metric-definitions table, a "Question d" design note). Inner
+loop `skipped` per the issue (declarative chart/dataset config, no unit-decomposable logic).
 
 **P4-07 done**: `CHALLENGE.md` question f (top product by units purchased for the "Promotion" sales
 reason) + the fifth hero KPI (Promotion-Impact Revenue, `FR-8`), placed alongside the P4-01 hero
@@ -203,9 +236,10 @@ _none — Phase 2 closed at a clean boundary; files describe the position._
 5. **P4-02 done** — question a (orders/qty/value sliced + filtered) landed.
 6. **P4-03 done** — question-b top-products-by-AOV chart/dataset landed.
 7. **P4-04 done** — top-10-customers (question c) chart landed.
-8. **P4-06 done** — question-e time series (orders/qty/value by month & year) chart landed.
-9. **P4-07 done** — question f + Promotion-Impact hero KPI landed. Remaining: P4-05 → P4-08 →
-   P4-10.
+8. **P4-05 done** — top-5-cities (question d) chart landed.
+9. **P4-06 done** — question-e time series (orders/qty/value by month & year) chart landed.
+10. **P4-07 done** — question f + Promotion-Impact hero KPI landed. **All of P4-02..P4-07 are now
+    done.** Remaining: P4-08 → P4-10.
 
 ## Open questions
 _None blocking._ The full-data ingestion question is resolved (tactical Parquet form above; the
@@ -217,6 +251,15 @@ value non-vacuously. **P4-07's worker should use `sales_reason_name = 'On Promot
 against real data (3,515 matched orders), no rediscovery needed.
 
 ## Worklog (most recent first)
+- **P4-05 done**: question d — top 5 cities by revenue. Virtual dataset
+  `bi/datasets/main/question_d_top_cities.yaml` (fct_sales + all 6 required filter dims, reason via
+  correlated subquery to avoid bridge fan-out) + `bi/charts/question_d_top5_cities.yaml` (table,
+  group by city, top 5 by `total_transaction_value = SUM(gross_revenue)`). Outer test
+  `scripts/validate_top5_cities.py` RED (bi/ files absent) → committed alone; fixed a table-alias bug
+  in the test's own oracle SQL (separate, non-weakening commit) → GREEN (5 distinct cities, ranked
+  descending, top = Toronto 4,498,883.7327, matches direct fct_sales/dim_geography aggregate
+  exactly). `just build` non-regression PASS=138, re-verified from a fully clean state. Inner loop
+  skipped per issue.
 - **P4-07 done**: question f (top product by units, "On Promotion" reason) + Promotion-Impact
   hero KPI. New virtual dataset `bi/datasets/main/vw_promotion_reason_sales.yaml`
   (`fct_sales`/`bridge_order_sales_reason`/`dim_sales_reason`/`dim_product` join, no fan-out

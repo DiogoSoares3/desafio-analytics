@@ -16,7 +16,7 @@
 | P4-02 | Question a — orders/qty/value sliced + filtered by all required dims | done | P4-01 |
 | P4-03 | Question b — top products by AOV by month/year/geography | done | P4-01 |
 | P4-04 | Question c — top-10 customers by revenue | done | P4-01 |
-| P4-05 | Question d — top-5 cities by revenue | todo | P4-01 |
+| P4-05 | Question d — top-5 cities by revenue | done | P4-01 |
 | P4-06 | Question e — orders/qty/value time series by month & year | done | P4-01 |
 | P4-07 | Question f + Promotion-impact hero KPI | done | P4-01 |
 | P4-08 | Deliverable-equivalence packaging (dashboard assembly + run instructions) | todo | P4-01..P4-07 |
