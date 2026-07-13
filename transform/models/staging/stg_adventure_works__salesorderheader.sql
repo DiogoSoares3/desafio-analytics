@@ -17,11 +17,8 @@ renamed as (
         taxamt as tax_amount,
         freight
     from source
-),
-
-online_only as (
-    select * from renamed
-    where online_order_flag
 )
 
-select * from online_only
+-- All channels (ADR-0010) — online_order_flag is carried through as the fact's
+-- is_online attribute rather than filtering the header down to online-only.
+select * from renamed

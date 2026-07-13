@@ -195,6 +195,100 @@ models:
                 to: ref('dim_sales_reason')
                 field: sales_reason_key
 
+  - name: fct_sales
+    description: >
+      Sales fact (Gold), **order-line grain** (ADR-0004), one row per source
+      `salesorderdetailid`, over **all sales channels** — online + reseller (ADR-0010).
+      Carries the seven conformed dim surrogate keys (geography = ship-to, ADR-0005),
+      degenerate order/line identifiers, the `is_online` channel attribute, and the
+      additive line-grain measures.
+    columns:
+      - name: sales_fact_key
+        description: Hashed surrogate primary key (dbt_utils.generate_surrogate_key over salesorderdetailid; ADR-0007).
+        data_tests:
+          - unique
+          - not_null
+      - name: product_key
+        description: FK to dim_product.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_key
+      - name: customer_key
+        description: FK to dim_customer (individual or store customer, ADR-0010).
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_key
+      - name: date_key
+        description: FK to dim_date (order date).
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: geography_key
+        description: FK to dim_geography — **ship-to** address (ADR-0005).
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_geography')
+                field: geography_key
+      - name: credit_card_key
+        description: >
+          FK to dim_credit_card. Resolves to the synthetic "N/A" member for card-less
+          reseller lines (ADR-0010), so this FK stays not_null.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_credit_card')
+                field: credit_card_key
+      - name: order_status_key
+        description: FK to dim_order_status.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_order_status')
+                field: order_status_key
+      - name: sales_order_number
+        description: Degenerate dimension — business order number (joins to bridge_order_sales_reason).
+        data_tests:
+          - not_null
+      - name: sales_order_line_number
+        description: Degenerate dimension — order-line sequence number within the order.
+        data_tests:
+          - not_null
+      - name: is_online
+        description: >
+          Channel attribute (ADR-0010) — true for online orders, false for reseller
+          orders. Distinguishes the two channels without splitting the fact.
+        data_tests:
+          - not_null
+      - name: order_qty
+        description: Units ordered on the line.
+        data_tests:
+          - not_null
+      - name: gross_revenue
+        description: Pre-discount/pre-tax/pre-freight line revenue — UnitPrice × OrderQty (ADR-0001).
+        data_tests:
+          - not_null
+      - name: discount_amount
+        description: Line discount — UnitPriceDiscount × UnitPrice × OrderQty.
+        data_tests:
+          - not_null
+      - name: net_revenue
+        description: gross_revenue − discount_amount (reconciles to source LineTotal, ADR-0001).
+        data_tests:
+          - not_null
+
   - name: dim_order_status
     description: >
       Conformed order status dimension (Gold), one row per AdventureWorks order status code
