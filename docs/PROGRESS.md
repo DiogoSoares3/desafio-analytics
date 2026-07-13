@@ -8,10 +8,10 @@
 ## SDD-CURSOR
 - **Phase:** 4 (Serving)
 - **Doing:** none
-- **Next:** P4-02, P4-03, P4-05 (remaining business questions, any order, unblocked by P4-01;
-  **P4-04, P4-06, P4-07 now done**); P4-08 waits on P4-02..P4-07; P4-10 waits on P4-08 + P4-09
-  (**P4-09 done**).
-- **Stop-reason:** none — P4-01, P4-04, P4-06, P4-07, and P4-09 all landed green; P4-02, P4-03,
+- **Next:** P4-02, P4-05 (remaining business questions, any order, unblocked by P4-01;
+  **P4-03, P4-04, P4-06, P4-07 now done**); P4-08 waits on P4-02..P4-07; P4-10 waits on P4-08 +
+  P4-09 (**P4-09 done**).
+- **Stop-reason:** none — P4-01, P4-03, P4-04, P4-06, P4-07, and P4-09 all landed green; P4-02,
   P4-05 are the next unblocked slices.
 
 ## Current status
@@ -45,6 +45,25 @@ unit-decomposable logic). No dbt models changed — `just build` clean-checkout 
 (BI-as-code — the runtime is separate from the repo's Python deps), so import was not exercised
 against a live server; reconciliation was proven directly against the built DuckDB file instead, per
 the issue's own scope note. **Unblocks P4-02..P4-08.**
+
+**P4-03 done**: question-b chart + dataset under `bi/` (ADR-0002) answering `CHALLENGE.md` question b
+("which products have the highest average order value by month, year, city, state, and country?").
+A virtual dataset `bi/datasets/main/question_b_product_aov.yaml` joins `fct_sales` to `dim_product`,
+`dim_date`, and `dim_geography` (ship-to, ADR-0005), exposing `year`, `month_number`, `month_name`,
+`year_month`, `city`, `state_province`, `country` as group-by/filter columns and declaring the
+**same** `average_order_value` formula as the P4-01 hero KPI (`(gross - discount) / distinct orders`,
+no parallel metric layer per NFR-3). `bi/charts/question_b_top_products_by_aov.yaml` is a `table` viz
+ranking `product_name` by that metric. Outer BDD: `scripts/validate_question_b.py` — RED proven
+(`FileNotFoundError` on the question-b dataset YAML, committed alone) before the `bi/` assets
+existed; GREEN once they landed: the script picks a **non-vacuous** `(year, state)` fixture (found
+dynamically by real order volume, avoiding the vacuous-`NULL`-comparison trap P4-09 flagged for
+P3-04), reproduces the chart's own SQL/metric to find the top-ranked product, and reconciles its AOV
+exactly against a directly-computed `fct_sales` aggregate for that product/year/state (verified case:
+2013/California → "Touring-1000 Blue, 60" → AOV = 4278.003255882352 on both sides). `bi/README.md`
+documents the new dataset/chart, run steps, and an extended metric-definitions table. Inner loop
+`skipped` per the issue. `just build` non-regression PASS=138 (Phase 4 adds no dbt models); `just
+check` (lint+typecheck+build) green; re-verified from a fully clean state (wiped `.venv`, `target/`,
+`dbt_packages/`, the DuckDB file, re-ran `just setup && just build` then the outer test).
 
 **P4-09 done** (PR #20): `notebooks/eda.ipynb` — an EDA notebook reading `data/adventureworks.duckdb`'s
 built marts directly via a DuckDB connection (no separate extract, per `CLAUDE.md`'s "Python is a thin
@@ -154,15 +173,16 @@ _none — Phase 2 closed at a clean boundary; files describe the position._
 2. **Phase 4 (Serving) opened and confirmed** — `docs/phases/phase-4/prd.md` (realizes
    FR-6/7/8/9/10/11, NFR-3) + `docs/phases/phase-4/backlog.md` (10 issues).
 3. **P4-01 done** — Superset scaffold + hero KPI tiles landed; datasets/connection ready for
-   P4-02..P4-08 to build on. P4-02..P4-07 (business questions a–f) can now proceed in any order.
-4. **P4-09 done** — EDA notebook landed (independent of the Superset track). Flags a P3-04
-   literal-string filter nuance (`sales_reason_name = 'Promotion'` matches no row; use
-   `sales_reason_type = 'Promotion'` / `sales_reason_name = 'On Promotion'`) relevant to **P4-07**'s
-   scenario before that issue is picked up.
+   P4-02..P4-08 to build on.
+4. **P4-03 done** — question-b top-products-by-AOV chart/dataset landed on top of P4-01's scaffold.
 5. **P4-04 done** — top-10-customers (question c) chart landed.
 6. **P4-06 done** — question-e time series (orders/qty/value by month & year) chart landed.
 7. **P4-07 done** — question f + Promotion-Impact hero KPI landed, using the corrected
-   `sales_reason_name = 'On Promotion'` filter. Remaining: P4-02, P4-03, P4-05 → P4-08 → P4-10.
+   `sales_reason_name = 'On Promotion'` filter.
+8. **P4-09 done** — EDA notebook landed (independent of the Superset track). Flagged (and since
+   fixed on `develop` via PR #22) a P3-04 literal-string filter nuance
+   (`sales_reason_name = 'Promotion'` matched no row; the real value is `'On Promotion'`).
+   Remaining: P4-02, P4-05 → P4-08 → P4-10.
 
 ## Open questions
 _None blocking._ The full-data ingestion question is resolved (tactical Parquet form above; the
@@ -204,6 +224,13 @@ against real data (3,515 matched orders), no rediscovery needed.
   `fct_sales`/`dim_customer` aggregate). `just build` non-regression PASS=138; `just check` green;
   re-verified from a fully clean state (wiped `.venv`, `dbt_packages`, the DuckDB file, re-ran
   `uv sync && dbt deps && just build`). Inner loop skipped per issue.
+- **P4-03 done**: `bi/datasets/main/question_b_product_aov.yaml` (fct_sales joined to dim_product,
+  dim_date, dim_geography ship-to) + `bi/charts/question_b_top_products_by_aov.yaml` (table, ranked
+  by `average_order_value`, same formula as the P4-01 hero KPI). Outer test
+  `scripts/validate_question_b.py` RED (question-b bi/ assets absent) → committed alone → GREEN
+  (non-vacuous year/state fixture's top product reconciles exactly to a direct fct_sales aggregate).
+  `just build` non-regression PASS=138; `just check` green; re-verified from a fully clean state.
+  Inner loop skipped per issue.
 - **P4-09 done** (PR #20): `notebooks/eda.ipynb` — chart + commentary for product mix, channel
   distribution (`is_online`), geography distribution, Promotion/discount impact, reading the built
   marts directly via DuckDB. Outer test `scripts/check_eda_notebook.py` (`just eda`) RED (notebook
