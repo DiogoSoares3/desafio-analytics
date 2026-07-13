@@ -146,6 +146,15 @@ P4-01..P4-08.**
   extended `scripts/load_adventure_works.py` to acquire it (`Store.csv`, `+|`/`&|` delimited like
   `Person.csv`) rather than escalating — a tactical, reversible completion of an existing acquisition
   step, not a new architectural decision.
+- **Fixed P3-04's vacuous-pass bug** (PR #22, `fix/P3-04-promotion-reason-literal`): the merged
+  `fct_sales_gross_invariant_under_bridge` test filtered `sales_reason_name = 'Promotion'`, matching
+  zero rows (real value `'On Promotion'`) — it had been passing on both sides `NULL` since P3-04
+  landed, never exercising the no-fan-out invariant. Found by P4-09's EDA cross-check. Corrected the
+  literal (3,515 matched orders, gross reconciles exactly non-vacuously) and added a zero-match guard
+  so a future rename can't silently pass again — strictly strengthens the assertion. Landed outside the
+  normal issue flow (orchestrator-authored fix, not a backlog issue) since it corrects an existing
+  merged test rather than building new scope; the merge itself required explicit user authorization
+  (the standing `auto-merge` policy covers issue-worker dispatches, not orchestrator self-merges).
 
 ## In review (PR open, awaiting merge) — n/a under auto-merge
 _Empty: auto-merge lands issues straight to `done`._
@@ -167,12 +176,11 @@ _none — Phase 2 closed at a clean boundary; files describe the position._
 ## Open questions
 _None blocking._ The full-data ingestion question is resolved (tactical Parquet form above; the
 architecture already fixed the "seeds for units / full dataset for reconciliation" split).
-**Non-blocking flag for P4-07** (raised by P4-09): its Gherkin scenario filters
-`sales_reason_name = 'Promotion'`, which matches no row in `dim_sales_reason` (the real reason is named
-`"On Promotion"`, `sales_reason_type = 'Promotion'`) — P3-04's existing singular test passes vacuously
-on this same literal string. P4-07's worker should use `sales_reason_type = 'Promotion'` (or the exact
-name `'On Promotion'`) to get real, non-empty results; not a `needs-decision` (the fix is mechanical,
-same intent), just called out so it isn't rediscovered from scratch.
+**Resolved:** P3-04's vacuous-pass literal-string bug (`sales_reason_name = 'Promotion'` → 0 rows) is
+fixed on `develop` (PR #22, see Tactical decisions) — the test now matches the real `'On Promotion'`
+value non-vacuously. **P4-07's worker should use `sales_reason_name = 'On Promotion'`** (or
+`sales_reason_type = 'Promotion'`) in its own scenario realization — same literal now proven correct
+against real data (3,515 matched orders), no rediscovery needed.
 
 ## Worklog (most recent first)
 - **P4-09 done** (PR #20): `notebooks/eda.ipynb` — chart + commentary for product mix, channel
