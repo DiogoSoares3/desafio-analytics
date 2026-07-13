@@ -19,7 +19,7 @@
 | P4-05 | Question d — top-5 cities by revenue | done | P4-01 |
 | P4-06 | Question e — orders/qty/value time series by month & year | done | P4-01 |
 | P4-07 | Question f + Promotion-impact hero KPI | done | P4-01 |
-| P4-08 | Deliverable-equivalence packaging (dashboard assembly + run instructions) | todo | P4-01..P4-07 |
+| P4-08 | Deliverable-equivalence packaging (dashboard assembly + run instructions) | doing | P4-01..P4-07 |
 | P4-09 | EDA notebook | done | — |
 | P4-10 | Commercial recommendations doc | todo | P4-08, P4-09 |
 
