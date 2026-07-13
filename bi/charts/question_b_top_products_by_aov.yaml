@@ -1,0 +1,31 @@
+slice_name: "Question b: Top Products by Average Order Value"
+viz_type: table
+description: >-
+  CHALLENGE.md question b: "which products have the highest average order value by month, year,
+  city, state, and country?" Ranks dim_product by average_order_value (same formula as the P4-01
+  hero KPI, ARCHITECTURE.md SS fct_sales), sliceable/filterable by month, year, city, state, and
+  country via the question_b_product_aov dataset's columns. Reconciles to a direct fct_sales
+  aggregate -- see scripts/validate_question_b.py (P4-03 outer test).
+params:
+  datasource: 8c1ff74c-0793-40e2-bf8b-89605150cdf2__table
+  viz_type: table
+  groupby:
+    - product_name
+  metrics:
+    - average_order_value
+  adhoc_filters: []
+  order_by_cols: []
+  order_desc: true
+  row_limit: 50
+  table_timestamp_format: smart_date
+  page_length: 0
+  include_time: false
+  # Question b required slice/filter dimensions (month, year, city, state, country) -- available
+  # as native filters/groupby columns on the question_b_product_aov dataset (year, month_number,
+  # month_name, year_month, city, state_province, country).
+  extra_form_data: null
+query_context: null
+cache_timeout: null
+uuid: e35d2c26-f0cd-4623-8c1d-00baa69fd187
+version: 1.0.0
+dataset_uuid: 8c1ff74c-0793-40e2-bf8b-89605150cdf2

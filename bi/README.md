@@ -13,16 +13,18 @@ bi/
   metadata.yaml                                    # Superset asset-bundle manifest
   databases/adventureworks_duckdb.yaml             # SQLAlchemy connection -> local DuckDB file
   datasets/main/fct_sales.yaml                     # fct_sales dataset + declared metrics
+  datasets/main/question_b_product_aov.yaml        # P4-03 -- question-b virtual dataset
   datasets/main/question_c_top10_customers.yaml    # P4-04 -- question-c virtual dataset
   datasets/main/question_e_sales_by_month.yaml     # P4-06 -- question-e virtual dataset (fct_sales x dim_date)
   datasets/main/vw_promotion_reason_sales.yaml     # P4-07 -- virtual (SQL) dataset for question f
   charts/hero_*.yaml                               # the five hero-KPI tiles (big_number_total)
+  charts/question_b_top_products_by_aov.yaml       # P4-03 -- question-b chart
   charts/question_c_top10_customers.yaml           # P4-04 -- top-10-customers table chart
   charts/question_e_orders_qty_value_by_month.yaml # P4-06 -- question-e time-series chart
   charts/question_f_top_product_promotion.yaml     # P4-07 -- question f: top product, "On Promotion"
 ```
-Later issues (P4-02, P4-03, P4-05, P4-08) add datasets/charts for the remaining business
-questions and assemble a `dashboards/*.yaml`.
+Later issues (P4-02, P4-05, P4-08) add datasets/charts for the remaining business questions and
+assemble a `dashboards/*.yaml`.
 
 ## Run instructions (local import)
 
@@ -50,6 +52,11 @@ questions and assemble a `dashboards/*.yaml`.
    "Question c: Top 10 Customers by Total Transaction Value" (P4-04), "Question e: Orders,
    Quantity & Value by Month/Year" (P4-06), and "Question f: Top Product -- On Promotion"
    (P4-07, answers `CHALLENGE.md` question f) under Charts.
+6. **Question b (P4-03):** find "Question b: Top Products by Average Order Value" under Charts — a
+   table ranking `product_name` by `average_order_value`, sliceable/filterable via the
+   `question_b_product_aov` dataset's `year`, `month_number`, `month_name`, `year_month`, `city`,
+   `state_province`, and `country` columns (CHALLENGE.md question b: "by month, year, city, state,
+   and country").
 
 ## Verifying reconciliation without a running Superset
 
@@ -62,6 +69,17 @@ Superset server required):
 ```
 uv run python scripts/validate_hero_kpis.py
 uv run python scripts/validate_question_f.py
+```
+
+`scripts/validate_question_b.py` is the outer BDD test for the P4-03 question-b chart: it picks a
+non-vacuous `(year, state)` fixture (a combo backed by real order volume), runs the chart's own
+declared virtual-dataset SQL + `average_order_value` metric grouped by product under that filter to
+find the top-ranked product, then asserts its AOV equals a direct `fct_sales` aggregate for that
+exact product/year/state, joined to `dim_product`, `dim_date`, and `dim_geography` (ship-to,
+ADR-0005) and written independently of the `bi/` YAML:
+
+```
+uv run python scripts/validate_question_b.py
 ```
 
 `scripts/test_top10_customers.py` is the outer BDD test for the P4-04 question-c chart: it
@@ -83,15 +101,16 @@ ADR-0006):
 uv run python scripts/validate_question_e_timeseries.py
 ```
 
-## Documented metric definitions (hero KPIs)
+## Documented metric definitions
 
-| Metric (`metric_name`) | Expression | ADR / source |
-|---|---|---|
-| `total_sales_revenue` | `SUM(gross_revenue)` | ADR-0001 |
-| `number_of_orders` | `COUNT(DISTINCT sales_order_number)` | ARCHITECTURE.md §fct_sales |
-| `units_sold` | `SUM(order_qty)` | ARCHITECTURE.md §fct_sales |
-| `average_order_value` | `(SUM(gross_revenue) - SUM(discount_amount)) / COUNT(DISTINCT sales_order_number)` | ARCHITECTURE.md §fct_sales |
-| `promotion_impact` | `SUM(gross_revenue)` filtered to `sales_reason_name = "On Promotion"` over the `fct_sales`/`bridge_order_sales_reason`/`dim_sales_reason` join (no fan-out, ADR-0003) | ADR-0003, P4-07 |
+| Metric (`metric_name`) | Dataset | Expression | ADR / source |
+|---|---|---|---|
+| `total_sales_revenue` | `fct_sales` | `SUM(gross_revenue)` | ADR-0001 |
+| `number_of_orders` | `fct_sales` | `COUNT(DISTINCT sales_order_number)` | ARCHITECTURE.md §fct_sales |
+| `units_sold` | `fct_sales` | `SUM(order_qty)` | ARCHITECTURE.md §fct_sales |
+| `average_order_value` (hero KPI) | `fct_sales` | `(SUM(gross_revenue) - SUM(discount_amount)) / COUNT(DISTINCT sales_order_number)` | ARCHITECTURE.md §fct_sales |
+| `average_order_value` (question b) | `question_b_product_aov` | same formula, per product/month/year/city/state/country group | ARCHITECTURE.md §fct_sales; CHALLENGE.md question b |
+| `promotion_impact` | `vw_promotion_reason_sales` | `SUM(gross_revenue)` filtered to `sales_reason_name = "On Promotion"` over the `fct_sales`/`bridge_order_sales_reason`/`dim_sales_reason` join (no fan-out, ADR-0003) | ADR-0003, P4-07 |
 
 **Promotion-Impact metric choice (P4-07):** uses `gross_revenue`, not `discount_amount`. The EDA
 notebook (`P4-09`) found `discount_amount` sits entirely on the reseller/store channel (60,919

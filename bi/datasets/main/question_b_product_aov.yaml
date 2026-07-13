@@ -1,0 +1,140 @@
+table_name: question_b_product_aov
+schema: main
+description: >-
+  Virtual dataset (BI-as-code, ADR-0002) answering CHALLENGE.md question b: "which products have
+  the highest average order value by month, year, city, state, and country?" One row per
+  fct_sales line joined to dim_product, dim_date, and dim_geography (ship-to, ADR-0005) -- the
+  same tested marts, no parallel metric layer (NFR-3). See ARCHITECTURE.md SS fct_sales for the
+  AOV formula and scripts/validate_question_b.py (P4-03 outer test).
+main_dttm_col: null
+default_endpoint: null
+offset: 0
+cache_timeout: null
+sql: >-
+  select
+      dim_product.product_name as product_name,
+      dim_date.year as year,
+      dim_date.month_number as month_number,
+      dim_date.month_name as month_name,
+      dim_date.year_month as year_month,
+      dim_geography.city as city,
+      dim_geography.state_province as state_province,
+      dim_geography.country as country,
+      fct_sales.sales_order_number as sales_order_number,
+      fct_sales.gross_revenue as gross_revenue,
+      fct_sales.discount_amount as discount_amount
+  from fct_sales
+  inner join dim_product on fct_sales.product_key = dim_product.product_key
+  inner join dim_date on fct_sales.date_key = dim_date.date_key
+  inner join dim_geography on fct_sales.geography_key = dim_geography.geography_key
+params: null
+template_params: null
+filter_select_enabled: true
+fetch_values_predicate: null
+extra: null
+uuid: 8c1ff74c-0793-40e2-bf8b-89605150cdf2
+version: 1.0.0
+database_uuid: 834123f4-6949-458f-aa23-1f4a3dc03c37
+columns:
+  - column_name: product_name
+    verbose_name: Product Name
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_product natural name -- the rank/group-by dimension for question b.
+  - column_name: year
+    verbose_name: Year
+    is_dttm: false
+    is_active: true
+    type: BIGINT
+    groupby: true
+    filterable: true
+    description: dim_date calendar year of the order.
+  - column_name: month_number
+    verbose_name: Month Number
+    is_dttm: false
+    is_active: true
+    type: BIGINT
+    groupby: true
+    filterable: true
+    description: dim_date 1-12 calendar month number of the order.
+  - column_name: month_name
+    verbose_name: Month Name
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_date month name of the order.
+  - column_name: year_month
+    verbose_name: Year-Month
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_date YYYY-MM label of the order.
+  - column_name: city
+    verbose_name: City
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_geography ship-to city (ADR-0005).
+  - column_name: state_province
+    verbose_name: State/Province
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_geography ship-to state/province (ADR-0005).
+  - column_name: country
+    verbose_name: Country
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_geography ship-to country (ADR-0005).
+  - column_name: sales_order_number
+    verbose_name: Sales Order Number
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: false
+    filterable: false
+    description: Degenerate dimension -- business order number, used by the AOV metric's distinct-order count.
+  - column_name: gross_revenue
+    verbose_name: Gross Revenue
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: false
+    description: Pre-discount/pre-tax/pre-freight line revenue -- UnitPrice x OrderQty (ADR-0001).
+  - column_name: discount_amount
+    verbose_name: Discount Amount
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: false
+    description: Line discount -- UnitPriceDiscount x UnitPrice x OrderQty.
+metrics:
+  # Question b (FR-6/CHALLENGE.md): AOV -- identical formula to fct_sales.yaml's
+  # `average_order_value` hero KPI (ARCHITECTURE.md SS fct_sales, "AOV = (gross - discount) /
+  # distinct orders"), applied here per product/month/year/geography group. No parallel metric
+  # layer (NFR-3).
+  - metric_name: average_order_value
+    verbose_name: Average Order Value
+    metric_type: null
+    expression: (SUM(gross_revenue) - SUM(discount_amount)) / COUNT(DISTINCT sales_order_number)
+    description: >-
+      AOV = (gross - discount) / distinct orders (ARCHITECTURE.md SS fct_sales), computed per
+      product/month/year/city/state/country group for question b.
+    d3format: "$,.2f"
+    warning_text: null
