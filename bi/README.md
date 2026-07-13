@@ -113,13 +113,34 @@ over this dataset never fans out the fact grain, even before any reason filter n
 single value. The `question_d_top5_cities` chart (`table`, `query_mode: aggregate`) groups by
 `city`, ranks by `total_transaction_value` descending, and limits to 5 rows.
 
-## Run instructions (local import)
+## Run instructions
 
+### Option A — Docker Compose (recommended; no local Superset/Python install)
+A single local container (Superset + the `duckdb-engine` driver baked in, `bi/docker/Dockerfile`)
+that boots, migrates its own metadata DB, creates an admin user, and **imports this `bi/` bundle
+automatically** (`bi/docker/entrypoint.sh`). No cloud, no extra services (SQLite metadata DB in a
+named volume) — stays inside the project's offline régua.
+
+1. Build the marts this bundle reads: `just build` (creates `data/adventureworks.duckdb`).
+2. `just bi-up` — builds the image and starts the container (`docker compose up --build -d`).
+3. `just bi-logs` to watch the import (takes ~30–60s the first time); it's ready once you see
+   gunicorn "Listening at: http://0.0.0.0:8088".
+4. Open **http://localhost:8088** — log in with **admin / admin** (override via
+   `SUPERSET_ADMIN_USERNAME`/`SUPERSET_ADMIN_PASSWORD` env vars before `just bi-up` if you want a
+   different login). Go to **Dashboards → "Adventure Works — Sales"**.
+5. `just bi-down` to stop it (keeps the imported state — restart instantly with `just bi-up`
+   again); `just bi-reset` to wipe the metadata DB and re-import from a clean slate.
+
+The DuckDB file is mounted **read-only**, and the database connection is configured
+`read_only: true` (`bi/databases/adventureworks_duckdb.yaml`'s `extra.engine_params`) — Superset
+only ever reads the marts `just build` produced, never writes to them.
+
+### Option B — local Superset install (manual import)
 1. Build the marts this bundle reads: `just build` (creates `data/adventureworks.duckdb`).
 2. Install Superset locally (not a project dependency — BI-as-code is declarative; Superset
    itself is the runtime, per ADR-0002) and initialize it, e.g.:
    ```
-   pip install apache-superset
+   pip install apache-superset duckdb-engine
    superset db upgrade
    superset fab create-admin
    superset init
@@ -133,19 +154,21 @@ single value. The `question_d_top5_cities` chart (`table`, `query_mode: aggregat
    superset import-directory bi/
    ```
    (or zip `bi/` and use the Superset UI's "Import" on Databases/Datasets/Charts/Dashboards).
-5. Open Superset, find the five "Hero KPI: …" charts under Charts — each renders the metric
-   declared in `datasets/main/fct_sales.yaml` (first four) or
-   `datasets/main/vw_promotion_reason_sales.yaml` (Promotion-Impact Revenue). Also find "Question
-   a: Orders / Quantity / Value by Product" and "...by Sales Reason" (P4-02), "Question b: Top
-   Products by Average Order Value" (P4-03), "Question c: Top 10 Customers by Total Transaction
-   Value" (P4-04), "Question d: Top 5 Cities by Revenue" (P4-05), "Question e: Orders, Quantity &
-   Value by Month/Year" (P4-06), and "Question f: Top Product -- On Promotion" (P4-07, answers
-   `CHALLENGE.md` question f) under Charts.
-6. Open **Dashboards → "Adventure Works — Sales"** (`bi/dashboards/adventure_works_sales.yaml`,
-   `P4-08`) to see every chart above assembled onto one page, with the dashboard-wide Sales
-   Channel / Product / Card Type / Sales Reason / Order Date / Customer / Order Status / City /
-   State / Country filters (`FR-7`) in the filter bar — narrowing any one of them reshapes every
-   chart and hero KPI on the dashboard at once (Superset native cross-filter scoping).
+
+### Once it's running (either option)
+Find the five "Hero KPI: …" charts under Charts — each renders the metric declared in
+`datasets/main/fct_sales.yaml` (first four) or `datasets/main/vw_promotion_reason_sales.yaml`
+(Promotion-Impact Revenue). Also find "Question a: Orders / Quantity / Value by Product" and
+"...by Sales Reason" (P4-02), "Question b: Top Products by Average Order Value" (P4-03),
+"Question c: Top 10 Customers by Total Transaction Value" (P4-04), "Question d: Top 5 Cities by
+Revenue" (P4-05), "Question e: Orders, Quantity & Value by Month/Year" (P4-06), and "Question f:
+Top Product -- On Promotion" (P4-07, answers `CHALLENGE.md` question f) under Charts.
+
+Open **Dashboards → "Adventure Works — Sales"** (`bi/dashboards/adventure_works_sales.yaml`,
+`P4-08`) to see every chart above assembled onto one page, with the dashboard-wide Sales
+Channel / Product / Card Type / Sales Reason / Order Date / Customer / Order Status / City /
+State / Country filters (`FR-7`) in the filter bar — narrowing any one of them reshapes every
+chart and hero KPI on the dashboard at once (Superset native cross-filter scoping).
 
 ## Verifying reconciliation without a running Superset
 

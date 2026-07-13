@@ -36,6 +36,23 @@ test-source:
 debug:
     uv run dbt debug --project-dir {{dbt_dir}}
 
+# Build + start the local Superset container, importing bi/ on boot (http://localhost:8088, admin/admin)
+bi-up:
+    docker compose up --build -d
+    @echo "Superset starting -> http://localhost:8088 (admin/admin). Tail progress with: just bi-logs"
+
+# Tail the Superset container's boot/import logs
+bi-logs:
+    docker compose logs -f superset
+
+# Stop the local Superset container (keeps the superset_home volume, i.e. the admin user + imported bundle)
+bi-down:
+    docker compose down
+
+# Stop the local Superset container and wipe its metadata DB (re-import bi/ from scratch on next bi-up)
+bi-reset:
+    docker compose down -v
+
 # Execute the EDA notebook end-to-end and check its required chart+commentary sections (P4-09)
 eda:
     uv run python scripts/check_eda_notebook.py

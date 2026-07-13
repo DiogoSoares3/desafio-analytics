@@ -1,0 +1,24 @@
+# Local-only runtime for the BI-as-code bundle (bi/, ADR-0002). Does not touch the dbt/DuckDB
+# build pipeline — run `just build` first so data/adventureworks.duckdb exists, then `just bi-up`.
+# No cloud, no external services: single container, SQLite metadata DB in a local volume.
+services:
+  superset:
+    build:
+      context: ./bi/docker
+      dockerfile: Dockerfile
+    image: adventureworks-superset:local
+    ports:
+      - "8088:8088"
+    environment:
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY:-adventureworks-local-dev-only-secret-key}
+      SUPERSET_ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME:-admin}
+      SUPERSET_ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD:-admin}
+      SUPERSET_ADMIN_EMAIL: ${SUPERSET_ADMIN_EMAIL:-admin@example.com}
+    entrypoint: ["/app/bi/docker/entrypoint.sh"]
+    volumes:
+      - ./data:/app/data:ro
+      - ./bi:/app/bi:ro
+      - superset_home:/app/superset_home
+
+volumes:
+  superset_home:
