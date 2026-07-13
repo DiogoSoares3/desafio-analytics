@@ -1,0 +1,120 @@
+table_name: fct_sales
+schema: main
+description: >-
+  Sales fact (Gold), order-line grain, all sales channels (ADR-0004/ADR-0010). Same tested mart
+  dbt builds -- no parallel metric layer (NFR-3). See ARCHITECTURE.md SS fct_sales.
+main_dttm_col: null
+default_endpoint: null
+offset: 0
+cache_timeout: null
+sql: null
+params: null
+template_params: null
+filter_select_enabled: true
+fetch_values_predicate: null
+extra: null
+uuid: de379e13-41e6-4f68-bdfd-837a9c83ae5b
+version: 1.0.0
+database_uuid: 834123f4-6949-458f-aa23-1f4a3dc03c37
+columns:
+  - column_name: sales_fact_key
+    verbose_name: Sales Fact Key
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: false
+    filterable: false
+    description: Hashed surrogate primary key (dbt_utils.generate_surrogate_key over salesorderdetailid).
+  - column_name: sales_order_number
+    verbose_name: Sales Order Number
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: Degenerate dimension -- business order number.
+  - column_name: is_online
+    verbose_name: Sales Channel (Online)
+    is_dttm: false
+    is_active: true
+    type: BOOLEAN
+    groupby: true
+    filterable: true
+    description: Channel attribute (ADR-0010) -- true for online orders, false for reseller orders.
+  - column_name: order_qty
+    verbose_name: Order Quantity
+    is_dttm: false
+    is_active: true
+    type: BIGINT
+    groupby: false
+    filterable: true
+    description: Units ordered on the line.
+  - column_name: gross_revenue
+    verbose_name: Gross Revenue
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: true
+    description: Pre-discount/pre-tax/pre-freight line revenue -- UnitPrice x OrderQty (ADR-0001).
+  - column_name: discount_amount
+    verbose_name: Discount Amount
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: true
+    description: Line discount -- UnitPriceDiscount x UnitPrice x OrderQty.
+  - column_name: net_revenue
+    verbose_name: Net Revenue
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: true
+    description: gross_revenue - discount_amount (reconciles to source LineTotal, ADR-0001).
+metrics:
+  # Hero KPI 1 (FR-8): Total Sales Revenue -- P4-01 scenario, "Then Total Sales Revenue equals
+  # sum(gross_revenue) computed directly from fct_sales".
+  - metric_name: total_sales_revenue
+    verbose_name: Total Sales Revenue
+    metric_type: null
+    expression: SUM(gross_revenue)
+    description: >-
+      Total gross revenue across all sales channels (ADR-0001). Hero KPI (FR-8). Definition:
+      sum(gross_revenue) over fct_sales.
+    d3format: "$,.2f"
+    warning_text: null
+  # Hero KPI 2 (FR-8): Number of Orders -- P4-01 scenario, "Then Number of Orders equals
+  # count(distinct sales_order_number) from fct_sales".
+  - metric_name: number_of_orders
+    verbose_name: Number of Orders
+    metric_type: null
+    expression: COUNT(DISTINCT sales_order_number)
+    description: >-
+      Distinct order count across all sales channels. Hero KPI (FR-8). Definition:
+      count(distinct sales_order_number) over fct_sales.
+    d3format: ",d"
+    warning_text: null
+  # Hero KPI 3 (FR-8): Units Sold -- P4-01 scenario, "Then Units Sold equals sum(order_qty) from
+  # fct_sales".
+  - metric_name: units_sold
+    verbose_name: Units Sold
+    metric_type: null
+    expression: SUM(order_qty)
+    description: >-
+      Total units ordered across all sales channels. Hero KPI (FR-8). Definition:
+      sum(order_qty) over fct_sales.
+    d3format: ",d"
+    warning_text: null
+  # Hero KPI 4 (FR-8): Average Order Value -- P4-01 scenario, "Then Average Order Value equals
+  # (sum(gross_revenue) - sum(discount_amount)) / count(distinct sales_order_number)"
+  # (ARCHITECTURE.md SS fct_sales AOV definition, also used by question b, P4-03).
+  - metric_name: average_order_value
+    verbose_name: Average Order Value
+    metric_type: null
+    expression: (SUM(gross_revenue) - SUM(discount_amount)) / COUNT(DISTINCT sales_order_number)
+    description: >-
+      AOV = (gross - discount) / distinct orders (ARCHITECTURE.md SS fct_sales). Hero KPI (FR-8).
+    d3format: "$,.2f"
+    warning_text: null

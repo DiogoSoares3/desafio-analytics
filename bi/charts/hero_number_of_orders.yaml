@@ -1,0 +1,19 @@
+slice_name: "Hero KPI: Number of Orders"
+viz_type: big_number_total
+description: >-
+  Hero KPI (FR-8): distinct order count, all sales channels. Reconciles to
+  count(distinct sales_order_number) over fct_sales -- see fct_sales.yaml metric
+  `number_of_orders` and scripts/validate_hero_kpis.py (P4-01 outer test).
+params:
+  datasource: de379e13-41e6-4f68-bdfd-837a9c83ae5b__table
+  viz_type: big_number_total
+  metric: number_of_orders
+  adhoc_filters: []
+  header_font_size: 0.4
+  subheader_font_size: 0.15
+  y_axis_format: ",d"
+query_context: null
+cache_timeout: null
+uuid: 2751f72a-34d6-400c-a317-54c45338a0c9
+version: 1.0.0
+dataset_uuid: de379e13-41e6-4f68-bdfd-837a9c83ae5b

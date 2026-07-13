@@ -1,0 +1,19 @@
+slice_name: "Hero KPI: Units Sold"
+viz_type: big_number_total
+description: >-
+  Hero KPI (FR-8): total units ordered, all sales channels. Reconciles to sum(order_qty) over
+  fct_sales -- see fct_sales.yaml metric `units_sold` and scripts/validate_hero_kpis.py
+  (P4-01 outer test).
+params:
+  datasource: de379e13-41e6-4f68-bdfd-837a9c83ae5b__table
+  viz_type: big_number_total
+  metric: units_sold
+  adhoc_filters: []
+  header_font_size: 0.4
+  subheader_font_size: 0.15
+  y_axis_format: ",d"
+query_context: null
+cache_timeout: null
+uuid: cd25ce92-8542-46ee-bb39-9eba844c2c83
+version: 1.0.0
+dataset_uuid: de379e13-41e6-4f68-bdfd-837a9c83ae5b

@@ -1,0 +1,19 @@
+slice_name: "Hero KPI: Total Sales Revenue"
+viz_type: big_number_total
+description: >-
+  Hero KPI (FR-8): total gross revenue, all sales channels. Reconciles to sum(gross_revenue) over
+  fct_sales -- see fct_sales.yaml metric `total_sales_revenue` and
+  scripts/validate_hero_kpis.py (P4-01 outer test).
+params:
+  datasource: de379e13-41e6-4f68-bdfd-837a9c83ae5b__table
+  viz_type: big_number_total
+  metric: total_sales_revenue
+  adhoc_filters: []
+  header_font_size: 0.4
+  subheader_font_size: 0.15
+  y_axis_format: "$,.2f"
+query_context: null
+cache_timeout: null
+uuid: 6aa41433-a1e7-4981-9bc2-070d92a4762b
+version: 1.0.0
+dataset_uuid: de379e13-41e6-4f68-bdfd-837a9c83ae5b
