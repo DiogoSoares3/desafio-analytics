@@ -9,7 +9,7 @@
 | ID | Title | Status | Blocked by |
 |----|-------|--------|-----------|
 | P3-01 | Acquire canonical AdventureWorks → DuckDB Parquet + repoint source | **done (PR #11)** | — |
-| P3-02 | `bridge_order_sales_reason` (order × reason) | doing | P3-01 |
+| P3-02 | `bridge_order_sales_reason` (order × reason) | **done (PR #12)** | P3-01 |
 | P3-05 | All-channel dim rework: `dim_customer` (+stores) & `dim_credit_card` (+N/A) | todo | P3-01 |
 | P3-03 | `fct_sales` (order-line grain, all channels, 7 FKs, metrics) | todo | P3-01, P3-05 |
 | P3-04 | 2011 reconciliation + fact/bridge invariants | todo | P3-03, P3-02 |
