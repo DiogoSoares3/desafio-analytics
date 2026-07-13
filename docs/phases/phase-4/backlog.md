@@ -20,7 +20,7 @@
 | P4-06 | Question e — orders/qty/value time series by month & year | todo | P4-01 |
 | P4-07 | Question f + Promotion-impact hero KPI | todo | P4-01 |
 | P4-08 | Deliverable-equivalence packaging (dashboard assembly + run instructions) | todo | P4-01..P4-07 |
-| P4-09 | EDA notebook | todo | — |
+| P4-09 | EDA notebook | doing | — |
 | P4-10 | Commercial recommendations doc | todo | P4-08, P4-09 |
 
 P4-01 registers the Superset↔DuckDB connection and datasets every later BI issue (P4-02–P4-08) depends
