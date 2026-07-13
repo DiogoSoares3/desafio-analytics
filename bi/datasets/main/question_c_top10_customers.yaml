@@ -1,0 +1,184 @@
+table_name: question_c_top10_customers
+schema: main
+description: >-
+  CHALLENGE.md question c: top-10 customers by total transaction value, filterable by product,
+  card type, sales reason, sales date, status, city, state, and country (FR-6/FR-7). Virtual
+  dataset -- a read-only SQL join over the already-tested fct_sales/dim_* marts, same tested
+  numbers, no parallel metric layer (NFR-3). Sales reason is a scalar per-order subquery over
+  bridge_order_sales_reason (ADR-0003), not a row join, so it does not fan out fct_sales'
+  line-grain rows.
+main_dttm_col: order_date
+default_endpoint: null
+offset: 0
+cache_timeout: null
+sql: >-
+  select
+      f.sales_fact_key,
+      f.sales_order_number,
+      f.is_online,
+      f.order_qty,
+      f.gross_revenue,
+      f.discount_amount,
+      f.net_revenue,
+      c.customer_key,
+      c.full_name as customer_name,
+      p.product_name,
+      cc.card_type,
+      os.status_label,
+      g.city,
+      g.state_province,
+      g.country,
+      d.date_day as order_date,
+      (
+          select string_agg(distinct r.sales_reason_name, ', ')
+          from bridge_order_sales_reason b
+          inner join dim_sales_reason r on b.sales_reason_key = r.sales_reason_key
+          where b.sales_order_number = f.sales_order_number
+      ) as sales_reason_names
+  from fct_sales f
+  inner join dim_customer c on f.customer_key = c.customer_key
+  inner join dim_product p on f.product_key = p.product_key
+  inner join dim_credit_card cc on f.credit_card_key = cc.credit_card_key
+  inner join dim_order_status os on f.order_status_key = os.order_status_key
+  inner join dim_geography g on f.geography_key = g.geography_key
+  inner join dim_date d on f.date_key = d.date_key
+params: null
+template_params: null
+filter_select_enabled: true
+fetch_values_predicate: null
+extra: null
+uuid: 877c59cb-e27e-4a7c-a120-66bfb1520593
+version: 1.0.0
+database_uuid: 834123f4-6949-458f-aa23-1f4a3dc03c37
+columns:
+  - column_name: customer_name
+    verbose_name: Customer
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_customer.full_name -- the customer ranked by total transaction value.
+  - column_name: gross_revenue
+    verbose_name: Gross Revenue
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: false
+    description: Line gross revenue (ADR-0001) -- summed to rank customers (see module docstring).
+  - column_name: discount_amount
+    verbose_name: Discount Amount
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: false
+    description: Line discount amount.
+  - column_name: net_revenue
+    verbose_name: Net Revenue
+    is_dttm: false
+    is_active: true
+    type: DOUBLE
+    groupby: false
+    filterable: false
+    description: gross_revenue - discount_amount (reconciles to source LineTotal, ADR-0001).
+  - column_name: order_qty
+    verbose_name: Order Quantity
+    is_dttm: false
+    is_active: true
+    type: BIGINT
+    groupby: false
+    filterable: false
+    description: Units ordered on the line.
+  - column_name: is_online
+    verbose_name: Sales Channel (Online)
+    is_dttm: false
+    is_active: true
+    type: BOOLEAN
+    groupby: true
+    filterable: true
+    description: Channel attribute (ADR-0010) -- sales channel filter (FR-7).
+  - column_name: product_name
+    verbose_name: Product
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_product.product_name -- required filter (FR-7).
+  - column_name: card_type
+    verbose_name: Card Type
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_credit_card.card_type -- required filter (FR-7).
+  - column_name: sales_reason_names
+    verbose_name: Sales Reason
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: >-
+      Comma-separated dim_sales_reason.sales_reason_name(s) for the order (bridge, ADR-0003) --
+      required filter (FR-7). A scalar per-order subquery, not a row join, so it does not fan out
+      fct_sales' line-grain rows.
+  - column_name: order_date
+    verbose_name: Order Date
+    is_dttm: true
+    is_active: true
+    type: DATE
+    groupby: true
+    filterable: true
+    description: dim_date.date_day -- required "sales date" filter (FR-7).
+  - column_name: status_label
+    verbose_name: Order Status
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_order_status.status_label -- required filter (FR-7).
+  - column_name: city
+    verbose_name: City
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_geography.city (ship-to, ADR-0005) -- required filter (FR-7).
+  - column_name: state_province
+    verbose_name: State/Province
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_geography.state_province (ship-to, ADR-0005) -- required filter (FR-7).
+  - column_name: country
+    verbose_name: Country
+    is_dttm: false
+    is_active: true
+    type: VARCHAR
+    groupby: true
+    filterable: true
+    description: dim_geography.country (ship-to, ADR-0005) -- required filter (FR-7).
+metrics:
+  # Total transaction value (question c) -- gross revenue, not net (documented choice, see
+  # scripts/validate_top10_customers.py module docstring): consistent with the P4-01 hero KPI
+  # "Total Sales Revenue" (sum(gross_revenue)) and the régua's own headline reconciliation figure
+  # (2011 all-channel gross = $12,646,112.16, ADR-0001). No parallel net-revenue ranking metric is
+  # introduced for this slice.
+  - metric_name: total_transaction_value
+    verbose_name: Total Transaction Value
+    metric_type: null
+    expression: SUM(gross_revenue)
+    description: >-
+      Total transaction value = gross revenue (ADR-0001), sum(gross_revenue) over fct_sales
+      joined to dim_customer. Documented choice: gross, not net -- consistent with the P4-01 hero
+      KPI and the régua's headline reconciliation figure. Ranks customers for question c (FR-6).
+    d3format: "$,.2f"
+    warning_text: null
