@@ -8,10 +8,11 @@
 ## SDD-CURSOR
 - **Phase:** 4 (Serving)
 - **Doing:** none
-- **Next:** P4-02, P4-03, P4-05, P4-07 (remaining business questions, any order, unblocked by
-  P4-01); P4-08 waits on P4-02..P4-07; P4-10 waits on P4-08 + P4-09 (**P4-09 done**).
-- **Stop-reason:** none — P4-01, P4-04, P4-06, and P4-09 all landed green; P4-02, P4-03, P4-05,
-  P4-07 are the next unblocked slices.
+- **Next:** P4-02, P4-03, P4-05 (remaining business questions, any order, unblocked by P4-01;
+  **P4-04, P4-06, P4-07 now done**); P4-08 waits on P4-02..P4-07; P4-10 waits on P4-08 + P4-09
+  (**P4-09 done**).
+- **Stop-reason:** none — P4-01, P4-04, P4-06, P4-07, and P4-09 all landed green; P4-02, P4-03,
+  P4-05 are the next unblocked slices.
 
 ## Current status
 **Phase 3 (Fact + reconciliation) COMPLETE — 5/5 issues done** (P3-01 canonical AdventureWorks →
@@ -58,6 +59,29 @@ separate, strictly-stronger test-only fix before the implementation commit. GREE
 `notebooks/eda.ipynb` landed; re-verified from a fully clean state (wiped `.venv`, `target/`,
 `dbt_packages/`, the DuckDB file, re-ran `just setup && just build && just eda`). `just build`
 non-regression: PASS=138 (Phase 4 adds no dbt models). `just check` (lint+typecheck+build) green.
+
+**P4-07 done**: `CHALLENGE.md` question f (top product by units purchased for the "Promotion" sales
+reason) + the fifth hero KPI (Promotion-Impact Revenue, `FR-8`), placed alongside the P4-01 hero
+tiles. Adds a virtual (SQL) Superset dataset `bi/datasets/main/vw_promotion_reason_sales.yaml`
+joining `fct_sales → sales_order_number → bridge_order_sales_reason → dim_sales_reason` (+
+`dim_product` for the name) — no fan-out for a single-reason filter (ADR-0003), per the invariant
+P3-04's singular test already proves — with two metrics: `units` (question f) and
+`promotion_impact` (hero KPI). `bi/charts/question_f_top_product_promotion.yaml` (table, ranked by
+units, filtered to `sales_reason_name = "On Promotion"` — the real `dim_sales_reason` value, per
+PROGRESS's already-resolved note / P3-04 PR #22) and `bi/charts/hero_promotion_impact.yaml`
+(`big_number_total`, `sum(gross_revenue)` over the same join). **Promotion-Impact metric choice:**
+`gross_revenue`, not `discount_amount` — P4-09's EDA found `discount_amount` is structurally zero
+for the online-only "On Promotion" orders (it sits entirely on the reseller/store channel), so
+`gross_revenue` is the meaningful, non-degenerate figure; documented in `bi/README.md`. Outer BDD:
+`scripts/validate_question_f.py` — RED proven (`FileNotFoundError` on the not-yet-existing dataset
+YAML, committed alone), a follow-up test-only commit fixed a `chart_metric_name` gap for
+table/aggregate charts (stronger, not weaker — P4-01's helper only handled `big_number_total`'s
+singular `metric` param), then GREEN once the `bi/` assets landed: top product = **Water Bottle -
+30 oz.** (546 units), Promotion-Impact = **$6,361,828.95** — reconciles exactly to the direct join
+and matches P4-09's independently-derived EDA figure exactly. `just build` clean-checkout
+non-regression: PASS=138 (Phase 4 adds no dbt models); `just check` green. Inner loop `skipped` per
+the issue. Superset itself not installed in this environment (same as P4-01/precedent) —
+reconciliation proven directly against the built DuckDB file.
 
 Grounded numbers (reconcile to the tested marts, independent of Superset's chart engine): product mix
 — Bikes ~86% of gross revenue from ~30% of units; channel — resellers are ~12% of orders but ~73% of
@@ -137,7 +161,8 @@ _none — Phase 2 closed at a clean boundary; files describe the position._
    scenario before that issue is picked up.
 5. **P4-04 done** — top-10-customers (question c) chart landed.
 6. **P4-06 done** — question-e time series (orders/qty/value by month & year) chart landed.
-   Remaining: P4-02, P4-03, P4-05, P4-07 → P4-08 → P4-10.
+7. **P4-07 done** — question f + Promotion-Impact hero KPI landed, using the corrected
+   `sales_reason_name = 'On Promotion'` filter. Remaining: P4-02, P4-03, P4-05 → P4-08 → P4-10.
 
 ## Open questions
 _None blocking._ The full-data ingestion question is resolved (tactical Parquet form above; the
@@ -149,6 +174,15 @@ value non-vacuously. **P4-07's worker should use `sales_reason_name = 'On Promot
 against real data (3,515 matched orders), no rediscovery needed.
 
 ## Worklog (most recent first)
+- **P4-07 done**: question f (top product by units, "On Promotion" reason) + Promotion-Impact
+  hero KPI. New virtual dataset `bi/datasets/main/vw_promotion_reason_sales.yaml`
+  (`fct_sales`/`bridge_order_sales_reason`/`dim_sales_reason`/`dim_product` join, no fan-out
+  ADR-0003), `bi/charts/question_f_top_product_promotion.yaml`,
+  `bi/charts/hero_promotion_impact.yaml`. Outer test `scripts/validate_question_f.py` RED
+  (dataset YAML absent) → committed alone; fixed a `chart_metric_name` gap for table charts
+  (stronger, separate commit) → GREEN: top product Water Bottle - 30 oz. (546 units),
+  Promotion-Impact $6,361,828.95 (matches P4-09's EDA figure exactly). `just build`
+  non-regression PASS=138; `just check` green. Inner loop skipped per issue.
 - **P4-06 done**: `bi/datasets/main/question_e_sales_by_month.yaml` (virtual SQL dataset,
   fct_sales x dim_date) + `bi/charts/question_e_orders_qty_value_by_month.yaml`
   (`echarts_timeseries_line`, grouped by year_month) answering question e (orders/qty/value by
