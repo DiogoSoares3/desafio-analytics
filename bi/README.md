@@ -10,13 +10,15 @@ aggregate (NFR-3).
 
 ```
 bi/
-  metadata.yaml                          # Superset asset-bundle manifest
-  databases/adventureworks_duckdb.yaml   # SQLAlchemy connection -> local DuckDB file
-  datasets/main/fct_sales.yaml           # fct_sales dataset + declared metrics
-  charts/hero_*.yaml                     # the four P4-01 hero-KPI tiles (big_number_total)
+  metadata.yaml                                    # Superset asset-bundle manifest
+  databases/adventureworks_duckdb.yaml             # SQLAlchemy connection -> local DuckDB file
+  datasets/main/fct_sales.yaml                     # fct_sales dataset + declared metrics
+  datasets/main/question_c_top10_customers.yaml    # P4-04 -- question-c virtual dataset
+  charts/hero_*.yaml                               # the four P4-01 hero-KPI tiles (big_number_total)
+  charts/question_c_top10_customers.yaml           # P4-04 -- top-10-customers table chart
 ```
-Later issues (P4-02–P4-08) add datasets/charts for the six business questions and assemble a
-`dashboards/*.yaml`.
+Later issues (P4-02–P4-03, P4-05–P4-08) add datasets/charts for the remaining business questions
+and assemble a `dashboards/*.yaml`.
 
 ## Run instructions (local import)
 
@@ -39,16 +41,25 @@ Later issues (P4-02–P4-08) add datasets/charts for the six business questions 
    ```
    (or zip `bi/` and use the Superset UI's "Import" on Databases/Datasets/Charts/Dashboards).
 5. Open Superset, find the four "Hero KPI: …" charts under Charts — each renders the metric
-   declared in `datasets/main/fct_sales.yaml`.
+   declared in `datasets/main/fct_sales.yaml`. Find "Question c: Top 10 Customers by Total
+   Transaction Value" under Charts for the P4-04 question-c chart.
 
 ## Verifying reconciliation without a running Superset
 
-`scripts/validate_hero_kpis.py` is the outer BDD test for this bundle: it reads each hero chart's
-declared metric SQL straight from this YAML and asserts it equals a direct `fct_sales` aggregate,
-computed against the built DuckDB file directly (no live Superset server required):
+`scripts/validate_hero_kpis.py` is the outer BDD test for the P4-01 bundle: it reads each hero
+chart's declared metric SQL straight from this YAML and asserts it equals a direct `fct_sales`
+aggregate, computed against the built DuckDB file directly (no live Superset server required):
 
 ```
 uv run python scripts/validate_hero_kpis.py
+```
+
+`scripts/validate_top10_customers.py` is the outer BDD test for the P4-04 question-c chart: it
+checks the chart is configured to return exactly 10 rows ranked descending, and that the top
+customer's value reconciles to a direct `fct_sales`/`dim_customer` aggregate:
+
+```
+uv run python scripts/validate_top10_customers.py
 ```
 
 ## Documented metric definitions (hero KPIs)
@@ -62,3 +73,9 @@ uv run python scripts/validate_hero_kpis.py
 
 The fifth hero KPI (Promotion-impact, `FR-8`) is added in `P4-07` once
 `bridge_order_sales_reason` is wired into a dataset.
+
+## Documented metric definitions (business questions)
+
+| Question | Metric (`metric_name`) | Expression | Gross vs. net | ADR / source |
+|---|---|---|---|---|
+| c — top-10 customers by revenue | `total_transaction_value` (`question_c_top10_customers`) | `SUM(gross_revenue)` | **Gross** — chosen to match the P4-01 hero KPI "Total Sales Revenue" and the régua's own headline reconciliation figure (2011 all-channel gross = $12,646,112.16); no parallel net-revenue ranking is introduced | ADR-0001 |
