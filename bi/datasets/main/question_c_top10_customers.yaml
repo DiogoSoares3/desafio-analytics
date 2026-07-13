@@ -168,7 +168,7 @@ columns:
     description: dim_geography.country (ship-to, ADR-0005) -- required filter (FR-7).
 metrics:
   # Total transaction value (question c) -- gross revenue, not net (documented choice, see
-  # scripts/validate_top10_customers.py module docstring): consistent with the P4-01 hero KPI
+  # scripts/test_top10_customers.py module docstring): consistent with the P4-01 hero KPI
   # "Total Sales Revenue" (sum(gross_revenue)) and the régua's own headline reconciliation figure
   # (2011 all-channel gross = $12,646,112.16, ADR-0001). No parallel net-revenue ranking metric is
   # introduced for this slice.

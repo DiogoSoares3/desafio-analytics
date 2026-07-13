@@ -14,7 +14,7 @@ Sales Revenue" and the régua's own headline figure (2011 gross = $12,646,112.16
 
 Usage
 -----
-    uv run python scripts/validate_top10_customers.py
+    uv run python scripts/test_top10_customers.py
 
 Exits non-zero (and prints what mismatched or which file is missing) on failure -- this is a test,
 not a report. RED before bi/datasets/main/question_c_top10_customers.yaml and
