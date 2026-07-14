@@ -19,6 +19,18 @@ params:
   row_limit: 1000
   order_desc: true
   table_timestamp_format: smart_date
+  show_cell_bars: true
+  color_pn: true
+  conditional_formatting:
+    - operator: None
+      column: number_of_orders
+      colorScheme: "#eda100"
+    - operator: None
+      column: units_purchased
+      colorScheme: "#eda100"
+    - operator: None
+      column: total_transaction_value
+      colorScheme: "#eda100"
 query_context: null
 cache_timeout: null
 uuid: 7b4187a2-d2ca-44ae-8f4e-e935504178b7

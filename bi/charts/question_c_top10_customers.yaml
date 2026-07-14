@@ -18,9 +18,14 @@ params:
   adhoc_filters: []
   table_timestamp_format: smart_date
   show_cell_bars: true
+  color_pn: true
   column_config:
     total_transaction_value:
       d3NumberFormat: "$,.2f"
+  conditional_formatting:
+    - operator: None
+      column: total_transaction_value
+      colorScheme: "#2A78D6"
 query_context: null
 cache_timeout: null
 uuid: c2f0ac09-e5ad-42a1-a089-18bfd079511c

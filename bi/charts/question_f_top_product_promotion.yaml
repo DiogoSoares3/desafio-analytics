@@ -27,6 +27,10 @@ params:
   table_timestamp_format: smart_date
   show_cell_bars: true
   color_pn: true
+  conditional_formatting:
+    - operator: None
+      column: units
+      colorScheme: "#e34948"
 query_context: null
 cache_timeout: null
 uuid: eb81e096-8968-4380-9e4c-42344382767b
