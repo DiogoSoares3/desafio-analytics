@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv (+ project Python via pyproject.toml)
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          python-version-file: pyproject.toml
+
+      - name: Install just
+        uses: extractions/setup-just@v2
+
+      - name: Install Python deps + dbt packages
+        run: just setup
+
+      - name: Lint (ruff + sqlfluff)
+        run: just lint
+
+      - name: Type check (pyright)
+        run: just typecheck
+
+      - name: dbt build (staging -> intermediate -> marts + all model/PK/reconciliation tests)
+        run: just build
+
+      - name: dbt source tests (CHALLENGE.md demo requirement -- dbt test --select source:*)
+        run: just test-source
+
+      - name: Outer BDD / business-question reconciliation scripts
+        run: |
+          set -euo pipefail
+          for f in scripts/validate_*.py scripts/test_*.py; do
+            echo "::group::uv run python $f"
+            uv run python "$f"
+            echo "::endgroup::"
+          done
+
+      - name: EDA notebook executes end-to-end with required insight sections
+        run: just eda
