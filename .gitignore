@@ -16,7 +16,9 @@ wheels/
 
 # Obsidian (local personal vault config)
 .obsidian/
-resume.txt
+
+# Personal/extra-official docs (not part of the deliverable)
+/docs/private/
 
 # dbt artifacts
 target/
