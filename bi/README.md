@@ -236,6 +236,7 @@ datasets/charts.
 | `average_order_value` (hero KPI) | `fct_sales` | `(SUM(gross_revenue) - SUM(discount_amount)) / COUNT(DISTINCT sales_order_number)` | ARCHITECTURE.md §fct_sales |
 | `average_order_value` (question b) | `question_b_product_aov` | same formula, per product/month/year/city/state/country group | ARCHITECTURE.md §fct_sales; CHALLENGE.md question b |
 | `promotion_impact` | `vw_promotion_reason_sales` | `SUM(gross_revenue)` filtered to `sales_reason_name = "On Promotion"` over the `fct_sales`/`bridge_order_sales_reason`/`dim_sales_reason` join (no fan-out, ADR-0003) | ADR-0003, P4-07 |
+| `count` | `question_a_sales_detail`, `question_a_sales_by_reason` | `COUNT(*)` | not surfaced on any chart -- Superset's native-filter machinery (e.g. the Order Date time filter, the Sales Reason select filter) queries a metric literally named `count` internally when loading a filter's options/bounds; without it the filter panel shows "Cannot load filter, Error: Metric 'count' does not exist" |
 
 **Promotion-Impact metric choice (P4-07):** uses `gross_revenue`, not `discount_amount`. The EDA
 notebook (`P4-09`) found `discount_amount` sits entirely on the reseller/store channel (60,919
