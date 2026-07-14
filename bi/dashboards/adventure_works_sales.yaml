@@ -168,6 +168,7 @@ position:
     id: CHART-hero_total_sales_revenue
     children: []
     meta:
+      chartId: 0
       uuid: 6aa41433-a1e7-4981-9bc2-070d92a4762b
       sliceName: "Hero KPI: Total Sales Revenue"
       width: 3
@@ -177,6 +178,7 @@ position:
     id: CHART-hero_number_of_orders
     children: []
     meta:
+      chartId: 0
       uuid: 2751f72a-34d6-400c-a317-54c45338a0c9
       sliceName: "Hero KPI: Number of Orders"
       width: 3
@@ -186,6 +188,7 @@ position:
     id: CHART-hero_units_sold
     children: []
     meta:
+      chartId: 0
       uuid: cd25ce92-8542-46ee-bb39-9eba844c2c83
       sliceName: "Hero KPI: Units Sold"
       width: 3
@@ -195,6 +198,7 @@ position:
     id: CHART-hero_average_order_value
     children: []
     meta:
+      chartId: 0
       uuid: f626e8ca-7318-4421-a7f2-74b0cb39c24f
       sliceName: "Hero KPI: Average Order Value"
       width: 3
@@ -204,6 +208,7 @@ position:
     id: CHART-hero_promotion_impact
     children: []
     meta:
+      chartId: 0
       uuid: 85610491-2e2a-4820-ae5e-5e7536dab435
       sliceName: "Hero KPI: Promotion-Impact Revenue"
       width: 3
@@ -219,6 +224,7 @@ position:
     id: CHART-question_a_orders_qty_value
     children: []
     meta:
+      chartId: 0
       uuid: ee985bbc-d60f-4f6b-b02b-87293eacd561
       sliceName: "Question a: Orders / Quantity / Value by Product"
       width: 6
@@ -228,6 +234,7 @@ position:
     id: CHART-question_a_orders_qty_value_by_reason
     children: []
     meta:
+      chartId: 0
       uuid: 7b4187a2-d2ca-44ae-8f4e-e935504178b7
       sliceName: "Question a: Orders / Quantity / Value by Sales Reason"
       width: 6
@@ -243,6 +250,7 @@ position:
     id: CHART-question_b_top_products_by_aov
     children: []
     meta:
+      chartId: 0
       uuid: e35d2c26-f0cd-4623-8c1d-00baa69fd187
       sliceName: "Question b: Top Products by Average Order Value"
       width: 6
@@ -252,6 +260,7 @@ position:
     id: CHART-question_c_top10_customers
     children: []
     meta:
+      chartId: 0
       uuid: c2f0ac09-e5ad-42a1-a089-18bfd079511c
       sliceName: "Question c: Top 10 Customers by Total Transaction Value"
       width: 6
@@ -267,6 +276,7 @@ position:
     id: CHART-question_d_top5_cities
     children: []
     meta:
+      chartId: 0
       uuid: 9c7d4b1a-2e3f-4a5b-8c6d-7e8f9a0b1c2d
       sliceName: "Question d: Top 5 Cities by Revenue"
       width: 6
@@ -276,6 +286,7 @@ position:
     id: CHART-question_e_orders_qty_value_by_month
     children: []
     meta:
+      chartId: 0
       uuid: 119f9fbe-30f0-49fd-8444-7370f9160069
       sliceName: "Question e: Orders, Quantity & Value by Month/Year"
       width: 6
@@ -290,6 +301,7 @@ position:
     id: CHART-question_f_top_product_promotion
     children: []
     meta:
+      chartId: 0
       uuid: eb81e096-8968-4380-9e4c-42344382767b
       sliceName: "Question f: Top Product -- On Promotion"
       width: 6
