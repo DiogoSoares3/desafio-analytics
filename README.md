@@ -119,8 +119,8 @@ each:
 | 4 | Dashboard mockup (JPEG, Figma) | ✅ | [`docs/dashboard-mockup.jpg`](docs/dashboard-mockup.jpg) — layout mirrors the built dashboard (`bi/dashboards/adventure_works_sales.yaml`), figures illustrative |
 | 5 | Power BI / Databricks AI/BI dashboard focused on commercial area | ✅ delivered as an **Apache Superset** equivalent (deliberate, justified deviation) | [`bi/`](bi/) bundle + live via `just bi-up` (§ 5); rationale + deliverable-equivalence mapping: [ADR-0002](docs/adrs/0002-bi-tool-apache-superset.md) |
 | 6 | Business-rules documentation | ✅ | [`docs/business-rules.md`](docs/business-rules.md) |
-| 7 | Presentation slides (project stages, EDA insights, KPI justification, dashboard walkthrough, recommendations) | ❌ | --- |
-| 8 | Demo video (≤10 min): objective, dims/fact relationships, `dbt run`, `dbt test --select source:*`, `dbt test`, fact/dim joins & metrics, data testing, dashboard walkthrough | ❌ | --- |
+| 7 | Presentation slides (project stages, EDA insights, KPI justification, dashboard walkthrough, recommendations) | ✅ | submitted as `slides.pdf` in the Moodle delivery package (not repo-tracked) |
+| 8 | Demo video (3–5 min): objective, dims/fact relationships, `dbt run`/tests, dashboard walkthrough | ✅ | https://youtu.be/Y7AjVqipLPE |
 | optional | Data-project plan PDF (objectives, stakeholders, risks, ROI) | ❌ | --- |
 
 Business questions **a–f** (`CHALLENGE.md` §2) are every one answered on the dashboard with the

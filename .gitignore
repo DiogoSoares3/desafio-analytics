@@ -20,6 +20,10 @@ wheels/
 # Personal/extra-official docs (not part of the deliverable)
 /docs/private/
 
+# Moodle submission package (zip contents + the zip itself) -- assembled locally, not repo content
+/delivery/
+/delivery-package.zip
+
 # dbt artifacts
 target/
 dbt_packages/

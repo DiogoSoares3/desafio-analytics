@@ -163,7 +163,8 @@ v1 is done when **all** boxes below are checked.
 - [x] Conceptual DW diagram with source→mart lineage. *(FR-13)* — `docs/ARCHITECTURE.md` star-schema
       Mermaid diagram (PDF)
 - [x] Dashboard mockup (JPEG). *(FR-14, part)* — `docs/dashboard-mockup.jpg`
-- [ ] Presentation slides + demo video (≤10 min). *(FR-14, part)*
+- [x] Presentation slides + demo video (≤10 min). *(FR-14, part)* — slides submitted as
+      `slides.pdf` in the Moodle delivery package (not repo-tracked); video (5 min)
 - [ ] *(Could)* Data-project plan PDF (objectives, stakeholders, risks/contingencies, ROI narrative).
       *(FR-15)*
 
