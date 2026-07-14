@@ -13,11 +13,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install uv (+ project Python via pyproject.toml)
+      - name: Install uv (auto-provisions the Python pinned in pyproject.toml)
         uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
-          python-version-file: pyproject.toml
 
       - name: Install just
         uses: extractions/setup-just@v2
