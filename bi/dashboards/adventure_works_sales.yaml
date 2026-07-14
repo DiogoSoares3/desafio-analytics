@@ -163,6 +163,8 @@ position:
       - CHART-hero_units_sold
       - CHART-hero_average_order_value
       - CHART-hero_promotion_impact
+    meta:
+      background: BACKGROUND_TRANSPARENT
   CHART-hero_total_sales_revenue:
     type: CHART
     id: CHART-hero_total_sales_revenue
@@ -219,6 +221,8 @@ position:
     children:
       - CHART-question_a_orders_qty_value
       - CHART-question_a_orders_qty_value_by_reason
+    meta:
+      background: BACKGROUND_TRANSPARENT
   CHART-question_a_orders_qty_value:
     type: CHART
     id: CHART-question_a_orders_qty_value
@@ -245,6 +249,8 @@ position:
     children:
       - CHART-question_b_top_products_by_aov
       - CHART-question_c_top10_customers
+    meta:
+      background: BACKGROUND_TRANSPARENT
   CHART-question_b_top_products_by_aov:
     type: CHART
     id: CHART-question_b_top_products_by_aov
@@ -271,6 +277,8 @@ position:
     children:
       - CHART-question_d_top5_cities
       - CHART-question_e_orders_qty_value_by_month
+    meta:
+      background: BACKGROUND_TRANSPARENT
   CHART-question_d_top5_cities:
     type: CHART
     id: CHART-question_d_top5_cities
@@ -296,6 +304,8 @@ position:
     id: ROW-question-f
     children:
       - CHART-question_f_top_product_promotion
+    meta:
+      background: BACKGROUND_TRANSPARENT
   CHART-question_f_top_product_promotion:
     type: CHART
     id: CHART-question_f_top_product_promotion
