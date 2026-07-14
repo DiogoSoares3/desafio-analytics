@@ -222,6 +222,16 @@ columns:
     description: >-
       "individual" (online) or "store" (reseller) (dim_customer, ADR-0010).
 metrics:
+  - metric_name: count
+    verbose_name: COUNT(*)
+    metric_type: count
+    expression: COUNT(*)
+    description: >-
+      Row count. Superset's native-filter machinery (e.g. the Order Date time filter) queries a
+      metric literally named `count` internally; without it the filter fails to load
+      ("Metric 'count' does not exist"). Not surfaced on any chart.
+    d3format: ",d"
+    warning_text: null
   - metric_name: number_of_orders
     verbose_name: Number of Orders
     metric_type: null
